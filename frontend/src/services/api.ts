@@ -6,6 +6,11 @@ import {
   AnalysisResponse,
   BlockLengthExperimentRequest,
   BlockLengthExperimentResponse,
+  BenchmarkResponse,
+  PrecisionExperimentRequest,
+  PrecisionExperimentResponse,
+  RingingExperimentRequest,
+  RingingExperimentResponse,
 } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -100,4 +105,48 @@ export const apiService = {
     );
     return response.data;
   },
+
+  /**
+   * Fetches stored benchmark evaluation results across the CWRU dataset suite.
+   */
+  async getBenchmarkResults(): Promise<BenchmarkResponse> {
+    const response = await apiClient.get<BenchmarkResponse>('/api/benchmark/results');
+    return response.data;
+  },
+
+  /**
+   * Triggers a fresh benchmark evaluation run on the backend.
+   */
+  async runBenchmark(): Promise<BenchmarkResponse> {
+    const response = await apiClient.post<BenchmarkResponse>('/api/benchmark/run');
+    return response.data;
+  },
+
+  /**
+   * Executes the arithmetic precision & fixed-point simulation (Hypothesis H2).
+   */
+  async runPrecisionExperiment(
+    request: PrecisionExperimentRequest
+  ): Promise<PrecisionExperimentResponse> {
+    const response = await apiClient.post<PrecisionExperimentResponse>(
+      '/api/experiments/precision',
+      request
+    );
+    return response.data;
+  },
+
+  /**
+   * Executes the resonance-band filter ringing quantification experiment (Hypothesis H3).
+   */
+  async runRingingExperiment(
+    request: RingingExperimentRequest
+  ): Promise<RingingExperimentResponse> {
+    const response = await apiClient.post<RingingExperimentResponse>(
+      '/api/experiments/ringing',
+      request
+    );
+    return response.data;
+  },
 };
+
+

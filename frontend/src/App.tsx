@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard';
 import { SignalAnalysis } from './pages/SignalAnalysis';
 import { ExperimentLab } from './pages/ExperimentLab';
 import { LandingPage } from './pages/LandingPage';
+import { BenchmarkEvaluation } from './pages/BenchmarkEvaluation';
 
 const AppLayout: React.FC = () => {
   const location = useLocation();
@@ -23,7 +24,13 @@ const AppLayout: React.FC = () => {
           title: 'Experiment Lab',
           description: 'Evaluate block segmentation effects on kurtosis and execution time.',
         };
+      case '/benchmark':
+        return {
+          title: 'Benchmark Evaluation',
+          description: 'CWRU dataset test suite, interactive confusion matrix, and ROC curves.',
+        };
       case '/dashboard':
+      case '/':
       default:
         return {
           title: 'AcousticSense Dashboard',
@@ -44,6 +51,7 @@ const AppLayout: React.FC = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/analysis" element={<SignalAnalysis />} />
             <Route path="/experiments" element={<ExperimentLab />} />
+            <Route path="/benchmark" element={<BenchmarkEvaluation />} />
             <Route path="*" element={<Dashboard />} />
           </Routes>
         </main>

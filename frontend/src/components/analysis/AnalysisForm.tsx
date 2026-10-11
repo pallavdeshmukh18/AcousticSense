@@ -189,7 +189,7 @@ export const AnalysisForm: React.FC = () => {
             onChange={(e) => setDetectionThreshold(e.target.value)}
             placeholder="3.0"
             min="0.1"
-            step="0.1"
+            step="any"
             className="w-full text-xs px-3 py-2 border border-industrial-300 rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary-500 font-mono"
           />
           <span className="text-[10px] text-industrial-400 mt-1 block">
@@ -281,8 +281,8 @@ export const AnalysisForm: React.FC = () => {
                 value={ballDiameter}
                 onChange={(e) => setBallDiameter(e.target.value)}
                 placeholder="7.5"
-                min="0.1"
-                step="0.1"
+                min="0.001"
+                step="any"
                 className="w-full text-xs px-2.5 py-1.5 border border-industrial-300 rounded bg-white font-mono"
               />
             </div>
@@ -296,8 +296,8 @@ export const AnalysisForm: React.FC = () => {
                 value={pitchDiameter}
                 onChange={(e) => setPitchDiameter(e.target.value)}
                 placeholder="34.5"
-                min="0.1"
-                step="0.1"
+                min="0.001"
+                step="any"
                 className="w-full text-xs px-2.5 py-1.5 border border-industrial-300 rounded bg-white font-mono"
               />
             </div>
@@ -313,7 +313,7 @@ export const AnalysisForm: React.FC = () => {
                 placeholder="0"
                 min="-90"
                 max="90"
-                step="1"
+                step="any"
                 className="w-full text-xs px-2.5 py-1.5 border border-industrial-300 rounded bg-white font-mono"
               />
             </div>

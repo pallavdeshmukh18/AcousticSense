@@ -1,0 +1,164 @@
+[
+  {
+    "id": "97",
+    "file_base": "cwru_normal_baseline_12k",
+    "wav_file": "cwru_normal_baseline_12k.wav",
+    "csv_file": "cwru_normal_baseline_12k.csv",
+    "fault_type": "NORMAL",
+    "expected_defect": null,
+    "description": "Healthy baseline bearing with zero defect",
+    "sampling_frequency_hz": 12000,
+    "motor_rpm": 1796.0,
+    "total_samples": 243938,
+    "duration_seconds": 20.328,
+    "theoretical_frequencies": {
+      "shaft_frequency_hz": 29.93,
+      "bpfo_hz": 107.3,
+      "bpfi_hz": 162.1,
+      "bsf_hz": 70.55,
+      "ftf_hz": 11.92
+    },
+    "bearing": {
+      "bearing_model": "SKF 6205-2RS JEM",
+      "rolling_elements": 9,
+      "ball_diameter_mm": 7.94,
+      "pitch_diameter_mm": 39.04,
+      "contact_angle_deg": 0.0
+    }
+  },
+  {
+    "id": "130",
+    "file_base": "cwru_outer_race_fault_12k",
+    "wav_file": "cwru_outer_race_fault_12k.wav",
+    "csv_file": "cwru_outer_race_fault_12k.csv",
+    "fault_type": "OUTER_RACE",
+    "expected_defect": "BPFO",
+    "description": "Outer race fault (BPFO) 0.007 inch defect @ 6:00 load zone",
+    "sampling_frequency_hz": 12000,
+    "motor_rpm": 1796.0,
+    "total_samples": 121991,
+    "duration_seconds": 10.166,
+    "theoretical_frequencies": {
+      "shaft_frequency_hz": 29.93,
+      "bpfo_hz": 107.3,
+      "bpfi_hz": 162.1,
+      "bsf_hz": 70.55,
+      "ftf_hz": 11.92
+    },
+    "bearing": {
+      "bearing_model": "SKF 6205-2RS JEM",
+      "rolling_elements": 9,
+      "ball_diameter_mm": 7.94,
+      "pitch_diameter_mm": 39.04,
+      "contact_angle_deg": 0.0
+    }
+  },
+  {
+    "id": "105",
+    "file_base": "cwru_inner_race_fault_12k",
+    "wav_file": "cwru_inner_race_fault_12k.wav",
+    "csv_file": "cwru_inner_race_fault_12k.csv",
+    "fault_type": "INNER_RACE",
+    "expected_defect": "BPFI",
+    "description": "Inner race fault (BPFI) 0.007 inch defect",
+    "sampling_frequency_hz": 12000,
+    "motor_rpm": 1797.0,
+    "total_samples": 121265,
+    "duration_seconds": 10.105,
+    "theoretical_frequencies": {
+      "shaft_frequency_hz": 29.95,
+      "bpfo_hz": 107.36,
+      "bpfi_hz": 162.19,
+      "bsf_hz": 70.58,
+      "ftf_hz": 11.93
+    },
+    "bearing": {
+      "bearing_model": "SKF 6205-2RS JEM",
+      "rolling_elements": 9,
+      "ball_diameter_mm": 7.94,
+      "pitch_diameter_mm": 39.04,
+      "contact_angle_deg": 0.0
+    }
+  },
+  {
+    "id": "118",
+    "file_base": "cwru_ball_fault_12k",
+    "wav_file": "cwru_ball_fault_12k.wav",
+    "csv_file": "cwru_ball_fault_12k.csv",
+    "fault_type": "BALL",
+    "expected_defect": "BSF",
+    "description": "Ball element fault (BSF) 0.007 inch defect",
+    "sampling_frequency_hz": 12000,
+    "motor_rpm": 1796.0,
+    "total_samples": 122571,
+    "duration_seconds": 10.214,
+    "theoretical_frequencies": {
+      "shaft_frequency_hz": 29.93,
+      "bpfo_hz": 107.3,
+      "bpfi_hz": 162.1,
+      "bsf_hz": 70.55,
+      "ftf_hz": 11.92
+    },
+    "bearing": {
+      "bearing_model": "SKF 6205-2RS JEM",
+      "rolling_elements": 9,
+      "ball_diameter_mm": 7.94,
+      "pitch_diameter_mm": 39.04,
+      "contact_angle_deg": 0.0
+    }
+  },
+  {
+    "id": "135",
+    "file_base": "cwru_outer_race_fault_48k",
+    "wav_file": "cwru_outer_race_fault_48k.wav",
+    "csv_file": "cwru_outer_race_fault_48k.csv",
+    "fault_type": "OUTER_RACE",
+    "expected_defect": "BPFO",
+    "description": "Outer race fault (BPFO) 0.007 inch defect (High-res 48 kHz)",
+    "sampling_frequency_hz": 48000,
+    "motor_rpm": 1796.0,
+    "total_samples": 243538,
+    "duration_seconds": 5.074,
+    "theoretical_frequencies": {
+      "shaft_frequency_hz": 29.93,
+      "bpfo_hz": 107.3,
+      "bpfi_hz": 162.1,
+      "bsf_hz": 70.55,
+      "ftf_hz": 11.92
+    },
+    "bearing": {
+      "bearing_model": "SKF 6205-2RS JEM",
+      "rolling_elements": 9,
+      "ball_diameter_mm": 7.94,
+      "pitch_diameter_mm": 39.04,
+      "contact_angle_deg": 0.0
+    }
+  },
+  {
+    "id": "109",
+    "file_base": "cwru_inner_race_fault_48k",
+    "wav_file": "cwru_inner_race_fault_48k.wav",
+    "csv_file": "cwru_inner_race_fault_48k.csv",
+    "fault_type": "INNER_RACE",
+    "expected_defect": "BPFI",
+    "description": "Inner race fault (BPFI) 0.007 inch defect (High-res 48 kHz)",
+    "sampling_frequency_hz": 48000,
+    "motor_rpm": 1796.0,
+    "total_samples": 243938,
+    "duration_seconds": 5.082,
+    "theoretical_frequencies": {
+      "shaft_frequency_hz": 29.93,
+      "bpfo_hz": 107.3,
+      "bpfi_hz": 162.1,
+      "bsf_hz": 70.55,
+      "ftf_hz": 11.92
+    },
+    "bearing": {
+      "bearing_model": "SKF 6205-2RS JEM",
+      "rolling_elements": 9,
+      "ball_diameter_mm": 7.94,
+      "pitch_diameter_mm": 39.04,
+      "contact_angle_deg": 0.0
+    }
+  }
+]

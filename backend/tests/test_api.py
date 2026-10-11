@@ -620,3 +620,94 @@ def test_block_length_experiment_validation():
     # Notes disclaimer
     assert "hardware_disclaimer" in exp_data["notes"]
     assert "TMS320C6748" in exp_data["notes"]["hardware_disclaimer"]
+
+
+def test_benchmark_results_endpoint():
+    """Verifies that GET /api/benchmark/results returns the 6 CWRU benchmark files and ROC metrics."""
+    response = client.get("/api/benchmark/results")
+    assert response.status_code == 200
+    data = response.json()
+    assert "full_file_results" in data
+    assert "threshold_metrics" in data
+    assert len(data["full_file_results"]) == 6
+    assert len(data["threshold_metrics"]) >= 5
+    # Verify healthy baseline is marked NO_FAULT_INDICATED
+    normal_entry = next((r for r in data["full_file_results"] if r["name"] == "cwru_normal_baseline_12k"), None)
+    assert normal_entry is not None
+    assert normal_entry["detected_status"] == "NO_FAULT_INDICATED"
+
+
+def test_precision_experiment_endpoint():
+    """Verifies Hypothesis H2 precision evaluation endpoint on an uploaded signal."""
+    # Create 2000 samples of synthetic sine wave
+    fs = 1000.0
+    t = np.linspace(0, 2.0, 2000, endpoint=False)
+    sine = 1.5 * np.sin(2 * np.pi * 50 * t)
+
+    csv_buf = io.StringIO()
+    csv_buf.write("val\n")
+    for v in sine:
+        csv_buf.write(f"{v}\n")
+
+    up_resp = client.post(
+        "/api/signals/upload",
+        files={"file": ("prec_test.csv", csv_buf.getvalue().encode("utf-8"), "text/csv")},
+        data={"sampling_frequency": 1000.0},
+    )
+    sig_id = up_resp.json()["signal_id"]
+
+    prec_resp = client.post(
+        "/api/experiments/precision",
+        json={"signal_id": sig_id, "block_length": 512, "lpc_orders": [2, 4, 8, 16]},
+    )
+    assert prec_resp.status_code == 200
+    data = prec_resp.json()
+    assert "formats" in data
+    assert len(data["formats"]) == 5
+    assert data["hypothesis_h2_status"] == "CONFIRMED"
+    assert "lpc_stability_sweep" in data
+    assert len(data["lpc_stability_sweep"]) == 4
+
+
+def test_ringing_experiment_endpoint():
+    """Verifies Hypothesis H3 filter ringing evaluation endpoint on an uploaded signal."""
+    fs = 12000.0
+    t = np.linspace(0, 1.0, 12000, endpoint=False)
+    # Synthetic impulse bursts at 100 Hz
+    sig = 0.05 * np.random.randn(12000)
+    for i in range(0, 12000, 120):
+        sig[i : min(i + 10, 12000)] += 3.0
+
+    csv_buf = io.StringIO()
+    csv_buf.write("val\n")
+    for v in sig:
+        csv_buf.write(f"{v}\n")
+
+    up_resp = client.post(
+        "/api/signals/upload",
+        files={"file": ("ringing_test.csv", csv_buf.getvalue().encode("utf-8"), "text/csv")},
+        data={"sampling_frequency": fs},
+    )
+    sig_id = up_resp.json()["signal_id"]
+
+    resp = client.post(
+        "/api/experiments/ringing",
+        json={
+            "signal_id": sig_id,
+            "fault_frequency": 100.0,
+            "center_frequency": 2500.0,
+            "bandwidths": [100.0, 300.0, 800.0, 1600.0],
+            "filter_order": 2,
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["fault_frequency_hz"] == 100.0
+    assert data["impact_interval_ms"] == 10.0
+    assert data["hypothesis_h3_status"] == "CONFIRMED"
+    assert "bandwidth_results" in data
+    assert len(data["bandwidth_results"]) == 4
+    # Check that smearing regime is classified
+    assert data["bandwidth_results"][0]["smearing_regime"] in ["Severe Smearing", "Transitional", "Negligible Smearing"]
+
+

@@ -92,6 +92,21 @@ class BlockLengthExperimentRequest(BaseModel):
     sampling_frequency: Optional[float] = Field(None, gt=0.0, description="Sampling rate in Hz (optional override)")
 
 
+class PrecisionExperimentRequest(BaseModel):
+    signal_id: str = Field(..., description="Unique ID of previously uploaded signal")
+    block_length: Optional[int] = Field(1024, ge=32, description="Block length for moment accumulation")
+    lpc_orders: Optional[list[int]] = Field(None, description="LPC orders to sweep for stability")
+
+
+class RingingExperimentRequest(BaseModel):
+    signal_id: str = Field(..., description="Unique ID of previously uploaded signal")
+    fault_frequency: Optional[float] = Field(107.3, gt=0.0, description="Fault characteristic frequency in Hz (e.g. BPFO)")
+    center_frequency: Optional[float] = Field(3200.0, gt=0.0, description="Filter resonance band center frequency in Hz")
+    bandwidths: Optional[list[float]] = Field(None, description="List of bandwidths in Hz to sweep")
+    filter_order: Optional[int] = Field(2, ge=1, le=8, description="Butterworth filter order")
+
+
+
 # ---------------------------------------------------------------------------
 # Utility Helpers
 # ---------------------------------------------------------------------------
@@ -1082,3 +1097,130 @@ def block_length_experiment(request: BlockLengthExperimentRequest) -> dict[str, 
     }
 
     return sanitize_for_json(response_payload)
+
+
+@app.get("/api/benchmark/results", summary="Get CWRU Benchmark Results")
+def get_benchmark_results() -> dict[str, Any]:
+    """Returns stored benchmark evaluation results across the CWRU dataset suite."""
+    json_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data", "cwru", "benchmark_evaluation.json"))
+    if not os.path.exists(json_path):
+        # Run evaluation if not already generated
+        try:
+            import evaluate_benchmark
+            evaluate_benchmark.run_benchmark()
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Benchmark results not found and failed to run benchmark: {str(exc)}",
+            ) from exc
+
+    if not os.path.exists(json_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Benchmark evaluation data is not available. Please run evaluate_benchmark.py first.",
+        )
+
+    import json
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    return sanitize_for_json(data)
+
+
+@app.post("/api/benchmark/run", summary="Trigger Fresh Benchmark Evaluation")
+def run_fresh_benchmark() -> dict[str, Any]:
+    """Runs a fresh benchmark evaluation across all CWRU files and returns the updated metrics."""
+    try:
+        import evaluate_benchmark
+        evaluate_benchmark.run_benchmark()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to execute benchmark evaluation: {str(exc)}",
+        ) from exc
+
+    json_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data", "cwru", "benchmark_evaluation.json"))
+    import json
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    return sanitize_for_json(data)
+
+
+@app.post("/api/experiments/precision", summary="Run Precision Experiment (Hypothesis H2)")
+def precision_experiment(request: PrecisionExperimentRequest) -> dict[str, Any]:
+    """Evaluates arithmetic precision limits: Float64 vs Float32 vs Q31 vs Q15 vs BFP.
+
+    Also tests Levinson-Durbin linear prediction whitening ill-conditioning across order p.
+    """
+    if request.signal_id not in signals_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Signal with ID '{request.signal_id}' not found.",
+        )
+
+    signal_entry = signals_db[request.signal_id]
+    signal_data = signal_entry["signal"]
+
+    blk_len = request.block_length or 1024
+    if len(signal_data) < blk_len:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Signal length ({len(signal_data)}) is shorter than requested block length ({blk_len}).",
+        )
+
+    from app.fixed_point import run_arithmetic_precision_experiment
+
+    results = run_arithmetic_precision_experiment(
+        signal=signal_data,
+        block_length=blk_len,
+        lpc_orders=request.lpc_orders,
+    )
+
+    response_payload = {
+        "signal_id": request.signal_id,
+        "filename": signal_entry.get("filename"),
+        "sampling_frequency": signal_entry.get("sampling_frequency"),
+        "total_samples": len(signal_data),
+        **results,
+    }
+
+    return sanitize_for_json(response_payload)
+
+
+@app.post("/api/experiments/ringing", summary="Run Filter Ringing Experiment (Hypothesis H3)")
+def ringing_experiment(request: RingingExperimentRequest) -> dict[str, Any]:
+    """Quantifies resonance-band filter ringing and impulsiveness loss across filter bandwidths.
+
+    Evaluates dimensionless ratio beta = B / f_fault and smearing duration tau = 1/(pi*B).
+    """
+    if request.signal_id not in signals_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Signal with ID '{request.signal_id}' not found.",
+        )
+
+    signal_entry = signals_db[request.signal_id]
+    signal_data = signal_entry["signal"]
+    fs = float(signal_entry.get("sampling_frequency", 12000.0))
+
+    from app.filter_ringing import run_filter_ringing_experiment
+
+    results = run_filter_ringing_experiment(
+        signal=signal_data,
+        fs=fs,
+        fault_frequency=request.fault_frequency or 107.3,
+        center_frequency=request.center_frequency or 3200.0,
+        bandwidths=request.bandwidths,
+        filter_order=request.filter_order or 2,
+    )
+
+    response_payload = {
+        "signal_id": request.signal_id,
+        "filename": signal_entry.get("filename"),
+        "sampling_frequency": fs,
+        **results,
+    }
+
+    return sanitize_for_json(response_payload)
+
