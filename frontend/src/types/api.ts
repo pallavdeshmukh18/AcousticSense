@@ -129,6 +129,7 @@ export interface EnvelopeAnalysis {
 }
 
 export interface AnalysisResponse {
+  analysis_id?: string;
   signal: {
     signal_id: string;
     sampling_frequency: number;
@@ -289,6 +290,72 @@ export interface RingingExperimentResponse {
   bandwidth_results: BandwidthResult[];
   hypothesis_h3_status: string;
   scientific_conclusion: string;
+}
+
+// ---------------------------------------------------------------------------
+// AI Interpretation Types (Groq LLM Explanation)
+// ---------------------------------------------------------------------------
+
+export interface PipelineStageExplanation {
+  stage: string;
+  what_happened: string;
+  why_it_matters: string;
+  observed_result: string;
+}
+
+export interface FindingItem {
+  title: string;
+  measurement?: string | null;
+  explanation: string;
+  significance: string;
+  limitations?: string | null;
+}
+
+export interface BearingIndicatorItem {
+  name: string;
+  reference_frequency_hz?: number | null;
+  observed_peak_frequency_hz?: number | null;
+  indicator_rf?: number | null;
+  interpretation: string;
+}
+
+export interface BearingInterpretation {
+  available: boolean;
+  summary: string;
+  indicators: BearingIndicatorItem[];
+}
+
+export interface NextStepItem {
+  priority: 'High' | 'Medium' | 'Low' | string;
+  action: string;
+  reason: string;
+}
+
+export interface GlossaryItem {
+  term: string;
+  definition: string;
+}
+
+export interface InterpretationResponse {
+  analysis_id: string;
+  signal_id: string;
+  title: string;
+  executive_summary: string;
+  signal_overview: string;
+  pipeline_explanation: PipelineStageExplanation[];
+  key_findings: FindingItem[];
+  bearing_interpretation: BearingInterpretation;
+  plain_language_explanation: string;
+  limitations: string[];
+  recommended_next_steps: NextStepItem[];
+  glossary: GlossaryItem[];
+  model_used: string;
+  generated_at: string;
+}
+
+export interface InterpretRequest {
+  signal_id: string;
+  analysis_id?: string;
 }
 
 

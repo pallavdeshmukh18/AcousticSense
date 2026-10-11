@@ -8,56 +8,60 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ title, description }) => {
-  const { backendConnected, backendService, isCheckingHealth, checkBackendHealth } = useSignal();
+  const { backendConnected, isCheckingHealth, checkBackendHealth } = useSignal();
 
   return (
-    <header className="bg-white border-b border-industrial-200 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
-        <h1 className="text-xl font-semibold text-industrial-800 tracking-tight">{title}</h1>
-        <p className="text-sm text-industrial-500 mt-0.5">{description}</p>
+    <header className="bg-[#FFFFFF]/95 backdrop-blur-md border-b border-[#E5E5EA] px-8 py-3.5 flex items-center justify-between sticky top-0 z-20 select-none">
+      <div className="flex flex-col">
+        <h1 className="text-[17px] font-semibold text-[#1D1D1F] tracking-tight leading-snug">
+          {title}
+        </h1>
+        <p className="text-[12px] text-[#6E6E73] font-normal leading-normal">
+          {description}
+        </p>
       </div>
 
-      <div className="flex items-center gap-3 self-start sm:self-auto">
+      <div className="flex items-center gap-3">
+        {/* Subtle, understated backend health indicator */}
         <div
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-            backendConnected === true
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-              : backendConnected === false
-              ? 'bg-rose-50 text-rose-700 border-rose-200'
-              : 'bg-industrial-100 text-industrial-600 border-industrial-200'
-          }`}
+          className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#F5F5F7] text-[11px] font-medium text-[#6E6E73]"
           title={
-            backendConnected
-              ? `Backend Connected: ${backendService || 'Acoustic Emission Fault Detection API'}`
-              : 'Backend Disconnected: Ensure backend is running on http://localhost:8000'
+            backendConnected === true
+              ? 'DSP Backend operational and connected'
+              : backendConnected === false
+              ? 'DSP Backend disconnected or unreachable'
+              : 'Verifying DSP Backend status'
           }
         >
           <span
-            className={`w-2 h-2 rounded-full ${
+            className={`w-1.5 h-1.5 rounded-full ${
               backendConnected === true
-                ? 'bg-emerald-500 animate-pulse'
+                ? 'bg-[#34C759]'
                 : backendConnected === false
-                ? 'bg-rose-500'
-                : 'bg-industrial-400'
+                ? 'bg-[#FF3B30]'
+                : 'bg-[#FF9500]'
             }`}
           />
-          <span>
+          <span className="text-[#1D1D1F]">
             {backendConnected === true
-              ? 'Backend Connected'
+              ? 'DSP Engine'
               : backendConnected === false
-              ? 'Backend Offline'
-              : 'Checking API...'}
+              ? 'Offline'
+              : 'Connecting'}
           </span>
         </div>
 
+        {/* Small, unobtrusive refresh action */}
         <button
           onClick={() => checkBackendHealth()}
           disabled={isCheckingHealth}
-          className="p-1.5 text-industrial-400 hover:text-industrial-600 hover:bg-industrial-100 rounded-md transition-colors"
-          title="Re-check backend status"
-          aria-label="Re-check backend status"
+          className="p-1.5 text-[#86868B] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-md transition-colors"
+          title="Check backend connection"
+          aria-label="Refresh backend status"
         >
-          <RefreshCw className={`w-4 h-4 ${isCheckingHealth ? 'animate-spin text-primary-600' : ''}`} />
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${isCheckingHealth ? 'animate-spin text-[#0071E3]' : ''}`}
+          />
         </button>
       </div>
     </header>

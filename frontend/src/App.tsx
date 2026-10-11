@@ -17,12 +17,12 @@ const AppLayout: React.FC = () => {
       case '/analysis':
         return {
           title: 'Signal Analysis',
-          description: 'Upload audio/CSV waveforms and run full 8-stage DSP defect detection.',
+          description: 'Prepare a signal, configure parameters, and investigate frequency-domain and bearing-fault characteristics.',
         };
       case '/experiments':
         return {
           title: 'Experiment Lab',
-          description: 'Evaluate block segmentation effects on kurtosis and execution time.',
+          description: 'Investigate how signal-processing choices affect detection, numerical precision, and transient preservation.',
         };
       case '/benchmark':
         return {
@@ -42,11 +42,11 @@ const AppLayout: React.FC = () => {
   const meta = getPageMeta();
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-slate-50 text-slate-800">
+    <div className="flex flex-col md:flex-row min-h-screen bg-[#F5F5F7] text-[#1D1D1F] antialiased">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Header title={meta.title} description={meta.description} />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto bg-[#F5F5F7]">
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/analysis" element={<SignalAnalysis />} />

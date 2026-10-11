@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaultIndicator } from '../../types/api';
-import { AlertCircle, HelpCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 
 interface FaultFrequencyTableProps {
   faultFrequencies: Record<string, number>;
@@ -12,17 +12,17 @@ const FAULT_DESCRIPTIONS: Record<string, { name: string; formula: string; descri
   BPFO: {
     name: 'Ball Pass Frequency Outer Race',
     formula: '(n/2) × fr × (1 - (d/D) cos θ)',
-    description: 'Rate at which rolling elements pass over a defect on the outer bearing ring.',
+    description: 'Impact frequency as rolling elements pass across a defect on the stationary outer raceway.',
   },
   BPFI: {
     name: 'Ball Pass Frequency Inner Race',
     formula: '(n/2) × fr × (1 + (d/D) cos θ)',
-    description: 'Rate at which rolling elements pass over a defect on the rotating inner ring.',
+    description: 'Impact frequency as rolling elements pass across a defect on the rotating inner raceway.',
   },
   BSF: {
     name: 'Ball Spin Frequency',
     formula: '(D / 2d) × fr × (1 - ((d/D) cos θ)²)',
-    description: 'Rotational frequency of a single rolling element around its own axis.',
+    description: 'Rotational frequency of an individual rolling element around its own axis.',
   },
   FTF: {
     name: 'Fundamental Train Frequency',
@@ -45,16 +45,15 @@ export const FaultFrequencyTable: React.FC<FaultFrequencyTableProps> = ({
 
   if (!hasFrequencies) {
     return (
-      <div className="bg-white border border-industrial-200 rounded-xl p-5 shadow-xs">
+      <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-6 shadow-subtle">
         <div className="flex items-center gap-2 mb-2">
-          <HelpCircle className="w-4 h-4 text-industrial-400" />
-          <h3 className="text-sm font-semibold text-industrial-800">
-            Bearing Kinematic Defect Frequencies
+          <HelpCircle className="w-4 h-4 text-[#86868B]" />
+          <h3 className="text-[15px] font-semibold text-[#1D1D1F]">
+            Bearing kinematic frequencies
           </h3>
         </div>
-        <p className="text-xs text-industrial-500">
-          Bearing geometry (rolling elements, ball diameter, pitch diameter, contact angle) and shaft speed were not
-          provided. Theoretical characteristic frequencies were not evaluated.
+        <p className="text-[13px] text-[#6E6E73]">
+          Bearing geometry parameters were not evaluated. Enable bearing kinematics in Analysis Settings to compute theoretical defect frequencies.
         </p>
       </div>
     );
@@ -78,7 +77,6 @@ export const FaultFrequencyTable: React.FC<FaultFrequencyTableProps> = ({
       description: meta.description,
       theoreticalHz: theoretical ?? null,
       detectedHz: ind?.detected_hz ?? null,
-      magnitude: ind?.magnitude ?? null,
       noiseFloor: ind?.noise_floor ?? null,
       indicatorRf: ind?.indicator_rf ?? null,
       isExceeded,
@@ -86,87 +84,106 @@ export const FaultFrequencyTable: React.FC<FaultFrequencyTableProps> = ({
   });
 
   return (
-    <div className="bg-white border border-industrial-200 rounded-xl p-5 shadow-xs">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] overflow-hidden shadow-subtle">
+      {/* Header */}
+      <div className="p-6 pb-4 border-b border-[#E5E5EA] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[#FFFFFF]">
         <div>
-          <h3 className="text-sm font-semibold text-industrial-800">
-            Characteristic Bearing Fault Frequencies
+          <h3 className="text-[15px] font-semibold text-[#1D1D1F] tracking-tight">
+            Kinematic defect frequencies
           </h3>
-          <p className="text-xs text-industrial-500 mt-0.5">
-            Normalized fault indicator: Rf = Mf / (PN + ε), where Mf is magnitude near fault frequency and PN is local noise floor.
+          <p className="text-[13px] text-[#6E6E73] mt-0.5">
+            Normalized fault indicator: Rf = Mf / (PN + ε), evaluated against local median noise floor.
           </p>
         </div>
-        <span className="text-[11px] font-mono text-industrial-400 bg-industrial-100 px-2.5 py-1 rounded">
-          Threshold: {threshold !== null ? threshold?.toFixed(2) : '3.00'}
+        <span className="text-[11px] font-mono text-[#6E6E73] bg-[#F5F5F7] px-3 py-1.5 rounded-lg border border-[#E5E5EA] self-start sm:self-auto tabular-nums">
+          Cutoff: {threshold !== null ? threshold.toFixed(2) : '3.00'}
         </span>
       </div>
 
+      {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse">
+        <table className="w-full text-left text-[12px] border-collapse">
           <thead>
-            <tr className="border-b border-industrial-200 text-industrial-500 font-mono text-[11px] uppercase bg-industrial-50/60">
-              <th className="py-2.5 px-3">Defect Code</th>
-              <th className="py-2.5 px-3">Description & Kinematic Formula</th>
-              <th className="py-2.5 px-3 text-right">Theoretical (Hz)</th>
-              <th className="py-2.5 px-3 text-right">Detected Peak (Hz)</th>
-              <th className="py-2.5 px-3 text-right">Noise Floor (PN)</th>
-              <th className="py-2.5 px-3 text-right">Fault Indicator (Rf)</th>
-              <th className="py-2.5 px-3 text-center">Status</th>
+            <tr className="border-b border-[#E5E5EA] text-[#86868B] font-mono text-[10px] uppercase tracking-wider bg-[#FBFBFD]">
+              <th className="py-3 px-5 font-medium">Harmonic</th>
+              <th className="py-3 px-4 font-medium">Kinematic Description</th>
+              <th className="py-3 px-4 text-right font-medium">Theoretical (Hz)</th>
+              <th className="py-3 px-4 text-right font-medium">Detected (Hz)</th>
+              <th className="py-3 px-4 text-right font-medium">Noise Floor (PN)</th>
+              <th className="py-3 px-4 text-right font-medium">Indicator (Rf)</th>
+              <th className="py-3 px-5 text-center font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-industrial-100">
+          <tbody className="divide-y divide-[#F2F2F7] font-sans">
             {rows.map((row) => (
               <tr
                 key={row.code}
                 className={`transition-colors ${
-                  row.isExceeded ? 'bg-amber-50/60 hover:bg-amber-100/50' : 'hover:bg-industrial-50/50'
+                  row.isExceeded
+                    ? 'bg-[#FF9500]/5 hover:bg-[#FF9500]/10'
+                    : 'hover:bg-[#FBFBFD]'
                 }`}
               >
-                <td className="py-2.5 px-3 font-mono font-bold text-industrial-800">
-                  {row.code}
+                <td className="py-3 px-5 font-mono font-semibold text-[#1D1D1F]">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        row.isExceeded
+                          ? 'bg-[#FF9500]'
+                          : row.code === '1X'
+                          ? 'bg-[#86868B]'
+                          : 'bg-[#34C759]'
+                      }`}
+                    />
+                    {row.code}
+                  </span>
                 </td>
-                <td className="py-2.5 px-3">
-                  <div className="font-medium text-industrial-800">{row.name}</div>
-                  <div className="text-[10px] text-industrial-400 font-mono mt-0.5" title={row.description}>
+
+                <td className="py-3 px-4">
+                  <div className="font-medium text-[#1D1D1F]">{row.name}</div>
+                  <div
+                    className="text-[11px] text-[#86868B] font-mono mt-0.5 truncate max-w-sm"
+                    title={row.description}
+                  >
                     {row.formula}
                   </div>
                 </td>
-                <td className="py-2.5 px-3 text-right font-mono text-industrial-700">
-                  {row.theoreticalHz !== null ? `${row.theoreticalHz.toFixed(2)} Hz` : '—'}
+
+                <td className="py-3 px-4 text-right font-mono tabular-nums text-[#6E6E73]">
+                  {row.theoreticalHz !== null ? row.theoreticalHz.toFixed(2) : '—'}
                 </td>
-                <td className="py-2.5 px-3 text-right font-mono text-industrial-700">
-                  {row.detectedHz !== null ? `${row.detectedHz.toFixed(2)} Hz` : '—'}
+
+                <td className="py-3 px-4 text-right font-mono tabular-nums text-[#1D1D1F]">
+                  {row.detectedHz !== null ? row.detectedHz.toFixed(2) : '—'}
                 </td>
-                <td className="py-2.5 px-3 text-right font-mono text-industrial-500">
+
+                <td className="py-3 px-4 text-right font-mono tabular-nums text-[#6E6E73]">
                   {row.noiseFloor !== null ? row.noiseFloor.toFixed(5) : '—'}
                 </td>
-                <td className="py-2.5 px-3 text-right font-mono">
+
+                <td className="py-3 px-4 text-right font-mono tabular-nums font-semibold">
                   {row.indicatorRf !== null ? (
-                    <span
-                      className={`font-semibold ${
-                        row.isExceeded ? 'text-amber-800 text-sm' : 'text-industrial-700'
-                      }`}
-                    >
+                    <span className={row.isExceeded ? 'text-[#B25000]' : 'text-[#1D1D1F]'}>
                       {row.indicatorRf.toFixed(2)}
                     </span>
                   ) : (
                     '—'
                   )}
                 </td>
-                <td className="py-2.5 px-3 text-center">
-                  {row.code === '1X' ? (
-                    <span className="text-[10px] text-industrial-400 font-mono">Reference</span>
-                  ) : row.isExceeded ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
-                      <AlertCircle className="w-3 h-3 text-amber-600" />
-                      EXCEEDED
+
+                <td className="py-3 px-5 text-center">
+                  {row.isExceeded ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-[#FF9500]/10 text-[#B25000]">
+                      Exceeds Cutoff
                     </span>
-                  ) : row.indicatorRf !== null ? (
-                    <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                      Nominal
+                  ) : row.code === '1X' ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-[#F5F5F7] text-[#6E6E73]">
+                      Shaft Reference
                     </span>
                   ) : (
-                    <span className="text-[10px] text-industrial-400 font-mono">—</span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-[#34C759]/10 text-[#248A3D]">
+                      Nominal
+                    </span>
                   )}
                 </td>
               </tr>
@@ -177,3 +194,5 @@ export const FaultFrequencyTable: React.FC<FaultFrequencyTableProps> = ({
     </div>
   );
 };
+
+export default FaultFrequencyTable;

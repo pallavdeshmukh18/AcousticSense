@@ -4,11 +4,10 @@ import { apiService, extractErrorMessage } from '../../services/api';
 import { PrecisionExperimentResponse } from '../../types/api';
 import { Plot } from '../charts/PlotWrapper';
 import {
-  Cpu,
   Play,
   RotateCcw,
   CheckCircle2,
-  AlertTriangle,
+  AlertCircle,
   Layers,
   ShieldAlert,
 } from 'lucide-react';
@@ -43,11 +42,11 @@ export const PrecisionExperimentView: React.FC = () => {
   const formatNames = result?.formats.map((f) => f.format_name) || [];
   const kurtosisValues = result?.formats.map((f) => f.kurtosis) || [];
   const barColors = [
-    '#3b82f6', // Float64 (Blue)
-    '#10b981', // Float32 (Emerald)
-    '#6366f1', // BFP (Indigo)
-    '#f59e0b', // Q31 (Amber)
-    '#ef4444', // Q15 (Red)
+    '#0071E3', // Float64 (Apple Blue)
+    '#34C759', // Float32 (Apple Green)
+    '#5856D6', // BFP (Purple)
+    '#FF9500', // Q31 (Amber)
+    '#FF3B30', // Q15 (Red)
   ];
 
   // LPC Stability data
@@ -58,25 +57,29 @@ export const PrecisionExperimentView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Parameter Selection Form */}
-      <div className="bg-white border border-industrial-200 rounded-xl p-5 shadow-xs">
+      <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-6 shadow-subtle">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold text-industrial-800 flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-primary-600" />
-              <span>Arithmetic Precision & Word-Length Limits (Hypothesis H2)</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-mono text-[#0071E3] uppercase tracking-wider font-semibold">
+                Hypothesis H2 &bull; Word-Length Limits
+              </span>
+            </div>
+            <h3 className="text-[16px] font-semibold text-[#1D1D1F] tracking-tight mt-0.5">
+              Arithmetic precision
             </h3>
-            <p className="text-xs text-industrial-500 mt-0.5">
-              Simulates bit-exact quantization and fourth-moment accumulation across Float64, Float32, Q31, Q15, and BFP.
+            <p className="text-[13px] text-[#6E6E73] mt-0.5">
+              Compare numerical formats against the double-precision reference.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-industrial-600 font-medium">Block Size N:</span>
+              <span className="text-[#6E6E73] font-medium font-sans">Block Size:</span>
               <select
                 value={blockLength}
                 onChange={(e) => setBlockLength(Number(e.target.value))}
-                className="px-2.5 py-1.5 border border-industrial-300 rounded bg-white text-xs font-mono font-medium"
+                className="px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-[#FFFFFF] text-[13px] font-mono font-medium text-[#1D1D1F] focus:outline-none focus:border-[#0071E3]"
               >
                 <option value={256}>256 samples</option>
                 <option value={512}>512 samples</option>
@@ -88,17 +91,17 @@ export const PrecisionExperimentView: React.FC = () => {
             <button
               onClick={handleRun}
               disabled={isRunning || !uploadedSignal}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2 text-[13px] font-medium rounded-full text-white bg-[#0071E3] hover:bg-[#0077ED] disabled:opacity-40 disabled:cursor-not-allowed shadow-subtle transition-colors"
             >
               {isRunning ? (
                 <>
                   <RotateCcw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Evaluating Formats...</span>
+                  <span>Evaluating Formats…</span>
                 </>
               ) : (
                 <>
                   <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Run Precision Evaluation</span>
+                  <span>Run Evaluation</span>
                 </>
               )}
             </button>
@@ -107,9 +110,9 @@ export const PrecisionExperimentView: React.FC = () => {
       </div>
 
       {errorMessage && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
-          <span>{errorMessage}</span>
+        <div className="p-3 bg-[#FF3B30]/10 border border-[#FF3B30]/20 rounded-xl flex items-start gap-2.5 text-[12px] text-[#D70015]">
+          <AlertCircle className="w-4 h-4 text-[#FF3B30] shrink-0 mt-0.5" />
+          <span className="font-sans">{errorMessage}</span>
         </div>
       )}
 
@@ -117,101 +120,101 @@ export const PrecisionExperimentView: React.FC = () => {
       {result && (
         <div className="space-y-6">
           {/* Hypothesis Conclusion Banner */}
-          <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-4 shadow-2xs flex items-start gap-3">
-            <div className="w-7 h-7 rounded-md bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
-              <CheckCircle2 className="w-4 h-4" />
+          <div className="bg-[#FFFFFF] border border-[#E5E5EA] rounded-2xl p-5 shadow-subtle flex items-start gap-3.5">
+            <div className="w-8 h-8 rounded-lg bg-[#34C759]/10 text-[#34C759] flex items-center justify-center shrink-0 mt-0.5">
+              <CheckCircle2 className="w-4 h-4 text-[#248A3D]" />
             </div>
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-900 font-mono">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[12px] font-semibold uppercase tracking-wider text-[#1D1D1F] font-mono">
                   Hypothesis H2 Status: {result.hypothesis_h2_status}
                 </span>
-                <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold">
+                <span className="text-[11px] bg-[#F5F5F7] text-[#6E6E73] px-2.5 py-0.5 rounded-full font-medium">
                   Verified on {result.filename || 'Active Signal'}
                 </span>
               </div>
-              <p className="text-xs text-emerald-800 leading-relaxed font-sans">
+              <p className="text-[13px] text-[#6E6E73] leading-relaxed font-sans">
                 {result.scientific_conclusion}
               </p>
             </div>
           </div>
 
           {/* Formats Comparative Table */}
-          <div className="bg-white border border-industrial-200 rounded-xl overflow-hidden shadow-xs">
-            <div className="px-5 py-3 border-b border-industrial-100 bg-slate-50/60 flex items-center justify-between">
+          <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] overflow-hidden shadow-subtle">
+            <div className="px-6 py-4 border-b border-[#E5E5EA] bg-[#FFFFFF] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-industrial-700" />
-                <h4 className="text-xs font-semibold text-industrial-800 uppercase tracking-wider">
+                <Layers className="w-4 h-4 text-[#0071E3]" />
+                <h4 className="text-[15px] font-semibold text-[#1D1D1F] tracking-tight">
                   Arithmetic Formats & Dynamic Range Headroom (N = {result.block_length})
                 </h4>
               </div>
-              <span className="text-xs text-industrial-500 font-mono">
+              <span className="text-[11px] text-[#6E6E73] font-mono bg-[#F5F5F7] px-2.5 py-1 rounded-md border border-[#E5E5EA] tabular-nums">
                 Double Ref Kurtosis: {result.reference_kurtosis.toFixed(4)}
               </span>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-industrial-100 text-industrial-600 font-semibold uppercase tracking-wider text-[10px]">
-                  <tr>
-                    <th className="px-5 py-3">Precision Format</th>
-                    <th className="px-4 py-3">Category</th>
-                    <th className="px-4 py-3 text-right">Bit Width</th>
-                    <th className="px-4 py-3 text-right">Measured Kurtosis</th>
-                    <th className="px-4 py-3 text-right">Error Bias (%)</th>
-                    <th className="px-4 py-3 text-center">Headroom / Overflow</th>
-                    <th className="px-5 py-3">Operating Status</th>
+              <table className="w-full text-left text-[12px] border-collapse">
+                <thead>
+                  <tr className="border-b border-[#E5E5EA] text-[#86868B] font-mono text-[10px] uppercase tracking-wider bg-[#FBFBFD]">
+                    <th className="py-3 px-5 font-medium">Precision Format</th>
+                    <th className="py-3 px-4 font-medium">Category</th>
+                    <th className="py-3 px-4 text-right font-medium">Bit Width</th>
+                    <th className="py-3 px-4 text-right font-medium">Measured Kurtosis</th>
+                    <th className="py-3 px-4 text-right font-medium">Error Bias (%)</th>
+                    <th className="py-3 px-4 text-center font-medium">Headroom / Overflow</th>
+                    <th className="py-3 px-5 font-medium">Operating Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-industrial-100 text-industrial-700">
+                <tbody className="divide-y divide-[#F2F2F7] font-sans">
                   {result.formats.map((fmt) => (
-                    <tr key={fmt.format_name} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-5 py-3 font-medium text-industrial-900">
+                    <tr key={fmt.format_name} className="hover:bg-[#FBFBFD] transition-colors">
+                      <td className="py-3 px-5 font-semibold text-[#1D1D1F]">
                         {fmt.format_name}
                       </td>
-                      <td className="px-4 py-3 text-industrial-500 font-mono text-[11px]">
+                      <td className="py-3 px-4 text-[#6E6E73] font-mono text-[11px]">
                         {fmt.category}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono text-industrial-600">
+                      <td className="py-3 px-4 text-right font-mono tabular-nums text-[#6E6E73]">
                         {fmt.bit_width}-bit
                       </td>
-                      <td className="px-4 py-3 text-right font-mono font-semibold text-industrial-900">
+                      <td className="py-3 px-4 text-right font-mono tabular-nums font-semibold text-[#1D1D1F]">
                         {fmt.kurtosis.toFixed(4)}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono font-medium">
+                      <td className="py-3 px-4 text-right font-mono tabular-nums font-medium">
                         <span
                           className={
                             Math.abs(fmt.bias_percent) < 1.0
-                              ? 'text-emerald-700'
+                              ? 'text-[#248A3D]'
                               : Math.abs(fmt.bias_percent) < 5.0
-                              ? 'text-amber-700'
-                              : 'text-rose-700'
+                              ? 'text-[#B25000]'
+                              : 'text-[#D70015]'
                           }
                         >
                           {fmt.bias_percent >= 0 ? `+${fmt.bias_percent.toFixed(2)}%` : `${fmt.bias_percent.toFixed(2)}%`}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="py-3 px-4 text-center">
                         {fmt.overflow_flag ? (
-                          <span className="inline-flex items-center gap-1 text-rose-700 bg-rose-50 px-2 py-0.5 rounded text-[10px] font-semibold border border-rose-200">
-                            <ShieldAlert className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1 text-[#D70015] bg-[#FF3B30]/10 px-2.5 py-0.5 rounded-full text-[10px] font-medium">
+                            <ShieldAlert className="w-3 h-3 text-[#FF3B30]" />
                             Overflow
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[10px] font-semibold border border-emerald-200">
-                            <CheckCircle2 className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1 text-[#248A3D] bg-[#34C759]/10 px-2.5 py-0.5 rounded-full text-[10px] font-medium">
+                            <CheckCircle2 className="w-3 h-3 text-[#34C759]" />
                             Clean
                           </span>
                         )}
                       </td>
-                      <td className="px-5 py-3">
+                      <td className="py-3 px-5">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium ${
                             fmt.status.includes('Passed') || fmt.status.includes('Exact')
-                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                              ? 'bg-[#34C759]/10 text-[#248A3D]'
                               : fmt.status.includes('Marginal')
-                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                              : 'bg-rose-50 text-rose-800 border border-rose-200'
+                              ? 'bg-[#FF9500]/10 text-[#B25000]'
+                              : 'bg-[#FF3B30]/10 text-[#D70015]'
                           }`}
                         >
                           {fmt.status}
@@ -227,13 +230,13 @@ export const PrecisionExperimentView: React.FC = () => {
           {/* Charts Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Chart 1: Kurtosis by Format */}
-            <div className="bg-white border border-industrial-200 rounded-xl p-5 shadow-xs flex flex-col">
-              <div className="border-b border-industrial-100 pb-3 mb-2">
-                <h4 className="text-sm font-semibold text-industrial-800">
+            <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-6 shadow-subtle flex flex-col space-y-3">
+              <div className="border-b border-[#F2F2F7] pb-3">
+                <h4 className="text-[13px] font-semibold text-[#1D1D1F] tracking-tight">
                   Kurtosis Estimator Bias vs. Precision Format
                 </h4>
-                <p className="text-[11px] text-industrial-500">
-                  Compares Double-precision reference against Float32, BFP, Q31, and Q15.
+                <p className="text-[11px] text-[#6E6E73] mt-0.5">
+                  Compares Double-precision baseline against Float32, BFP, Q31, and Q15 word-lengths.
                 </p>
               </div>
 
@@ -253,17 +256,18 @@ export const PrecisionExperimentView: React.FC = () => {
                   ]}
                   layout={{
                     autosize: true,
-                    margin: { l: 40, r: 20, t: 15, b: 65 },
+                    margin: { l: 45, r: 20, t: 15, b: 65 },
                     xaxis: {
                       tickangle: -20,
-                      tickfont: { size: 10 },
+                      tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
                     },
                     yaxis: {
-                      title: { text: 'Excess Kurtosis', font: { size: 11 } },
-                      gridcolor: '#f1f5f9',
+                      title: { text: 'Excess Kurtosis', font: { size: 11, color: '#6E6E73' } },
+                      tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+                      gridcolor: '#F2F2F7',
                     },
-                    paper_bgcolor: 'transparent',
-                    plot_bgcolor: 'transparent',
+                    plot_bgcolor: '#FFFFFF',
+                    paper_bgcolor: '#FFFFFF',
                   }}
                   useResizeHandler
                   style={{ width: '100%', height: '100%' }}
@@ -273,13 +277,13 @@ export const PrecisionExperimentView: React.FC = () => {
             </div>
 
             {/* Chart 2: Levinson-Durbin Stability Line Chart */}
-            <div className="bg-white border border-industrial-200 rounded-xl p-5 shadow-xs flex flex-col">
-              <div className="border-b border-industrial-100 pb-3 mb-2 flex items-center justify-between">
+            <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-6 shadow-subtle flex flex-col space-y-3">
+              <div className="border-b border-[#F2F2F7] pb-3 flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-semibold text-industrial-800">
+                  <h4 className="text-[13px] font-semibold text-[#1D1D1F] tracking-tight">
                     Levinson-Durbin LPC Stability (|k_m| vs. Order p)
                   </h4>
-                  <p className="text-[11px] text-industrial-500">
+                  <p className="text-[11px] text-[#6E6E73] mt-0.5">
                     Reflection coefficient |k_m| must remain &lt; 1.0 for whitening filter stability.
                   </p>
                 </div>
@@ -295,8 +299,8 @@ export const PrecisionExperimentView: React.FC = () => {
                       type: 'scatter',
                       mode: 'lines+markers',
                       name: 'Float64 (Stable)',
-                      line: { color: '#0284c7', width: 2 },
-                      marker: { size: 6 },
+                      line: { color: '#0071E3', width: 2 },
+                      marker: { size: 6, color: '#0071E3' },
                     },
                     // Q15 Max km
                     {
@@ -305,8 +309,8 @@ export const PrecisionExperimentView: React.FC = () => {
                       type: 'scatter',
                       mode: 'lines+markers',
                       name: 'Q15 Fixed-Point',
-                      line: { color: '#ef4444', width: 2 },
-                      marker: { size: 6 },
+                      line: { color: '#FF3B30', width: 2 },
+                      marker: { size: 6, color: '#FF3B30' },
                     },
                     // Instability Cutoff Line (|km| = 1.0)
                     {
@@ -315,21 +319,23 @@ export const PrecisionExperimentView: React.FC = () => {
                       type: 'scatter',
                       mode: 'lines',
                       name: 'Instability Threshold (|km|=1.0)',
-                      line: { color: '#dc2626', dash: 'dash', width: 1.5 },
+                      line: { color: '#991B1B', dash: 'dash', width: 1.5 },
                       hoverinfo: 'none',
                     },
                   ]}
                   layout={{
                     autosize: true,
-                    margin: { l: 40, r: 20, t: 15, b: 40 },
+                    margin: { l: 45, r: 20, t: 15, b: 40 },
                     xaxis: {
-                      title: { text: 'LPC Filter Order (p)', font: { size: 11 } },
-                      gridcolor: '#f1f5f9',
+                      title: { text: 'LPC Filter Order (p)', font: { size: 11, color: '#6E6E73' } },
+                      gridcolor: '#F2F2F7',
+                      tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
                     },
                     yaxis: {
-                      title: { text: 'Max |k_m|', font: { size: 11 } },
+                      title: { text: 'Max |k_m|', font: { size: 11, color: '#6E6E73' } },
                       range: [0, 1.3],
-                      gridcolor: '#f1f5f9',
+                      gridcolor: '#F2F2F7',
+                      tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
                     },
                     legend: {
                       orientation: 'h',
@@ -337,8 +343,8 @@ export const PrecisionExperimentView: React.FC = () => {
                       y: 1.15,
                       font: { size: 10 },
                     },
-                    paper_bgcolor: 'transparent',
-                    plot_bgcolor: 'transparent',
+                    plot_bgcolor: '#FFFFFF',
+                    paper_bgcolor: '#FFFFFF',
                   }}
                   useResizeHandler
                   style={{ width: '100%', height: '100%' }}

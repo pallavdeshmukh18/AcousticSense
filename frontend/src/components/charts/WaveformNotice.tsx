@@ -8,46 +8,64 @@ interface WaveformNoticeProps {
 
 export const WaveformNotice: React.FC<WaveformNoticeProps> = ({ filtering }) => {
   return (
-    <div className="bg-white border border-industrial-200 rounded-xl p-5 shadow-xs">
-      <div className="flex items-center gap-2 mb-3">
-        <Filter className="w-4 h-4 text-primary-600" />
-        <h4 className="text-xs font-semibold text-industrial-800 uppercase tracking-wider font-mono">
-          Stage 4: Butterworth Bandpass Filter Configuration
-        </h4>
+    <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-6 shadow-subtle space-y-4">
+      {/* Header */}
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-lg bg-[#F0F6FF] flex items-center justify-center text-[#0071E3]">
+          <Filter className="w-4 h-4" />
+        </div>
+        <div>
+          <span className="text-[11px] font-mono text-[#0071E3] uppercase tracking-wider font-semibold">
+            Stage 05 &bull; Digital Filtering
+          </span>
+          <h4 className="text-[15px] font-semibold text-[#1D1D1F] tracking-tight mt-0.5">
+            Butterworth Bandpass Filter Configuration
+          </h4>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-        <div className="p-3 bg-industrial-50 rounded-lg border border-industrial-200/60 font-mono text-xs">
-          <span className="text-industrial-400 block text-[10px] uppercase">Filter Topology</span>
-          <span className="font-semibold text-industrial-800 mt-0.5 block">{filtering.filter_type} SOS</span>
-          <span className="text-[10px] text-industrial-400">Order: {filtering.order}</span>
+      {/* Parameter Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="p-3.5 bg-[#FBFBFD] rounded-xl border border-[#E5E5EA] font-mono text-xs">
+          <span className="text-[#86868B] block text-[10px] uppercase">Filter Topology</span>
+          <span className="font-semibold text-[#1D1D1F] mt-1 block text-[14px]">
+            {filtering.filter_type} SOS
+          </span>
+          <span className="text-[11px] text-[#86868B] mt-0.5 block font-sans">
+            Order {filtering.order} &bull; Zero-Phase Forward-Backward
+          </span>
         </div>
 
-        <div className="p-3 bg-industrial-50 rounded-lg border border-industrial-200/60 font-mono text-xs">
-          <span className="text-industrial-400 block text-[10px] uppercase">Selected Passband</span>
-          <span className="font-semibold text-industrial-800 mt-0.5 block">
+        <div className="p-3.5 bg-[#FBFBFD] rounded-xl border border-[#E5E5EA] font-mono text-xs">
+          <span className="text-[#86868B] block text-[10px] uppercase">Isolated Passband</span>
+          <span className="font-semibold text-[#0071E3] mt-1 block text-[14px] tabular-nums">
             {filtering.passband_hz[0].toFixed(1)} – {filtering.passband_hz[1].toFixed(1)} Hz
           </span>
-          <span className="text-[10px] text-industrial-400">Highest Kurtosis Resonance</span>
+          <span className="text-[11px] text-[#86868B] mt-0.5 block font-sans">
+            Screened Peak Kurtosis Band
+          </span>
         </div>
 
-        <div className="p-3 bg-industrial-50 rounded-lg border border-industrial-200/60 font-mono text-xs">
-          <span className="text-industrial-400 block text-[10px] uppercase">Filtering Mode</span>
-          <span className="font-semibold text-industrial-800 mt-0.5 block truncate" title={filtering.mode}>
+        <div className="p-3.5 bg-[#FBFBFD] rounded-xl border border-[#E5E5EA] font-mono text-xs">
+          <span className="text-[#86868B] block text-[10px] uppercase">Phase Characteristics</span>
+          <span className="font-semibold text-[#1D1D1F] mt-1 block text-[14px] truncate" title={filtering.mode}>
             {filtering.mode}
           </span>
-          <span className="text-[10px] text-industrial-400">Zero Phase Distortion</span>
+          <span className="text-[11px] text-[#86868B] mt-0.5 block font-sans">
+            Zero Phase Delay Distortion
+          </span>
         </div>
       </div>
 
-      <div className="p-3 bg-industrial-50/80 rounded-lg border border-industrial-200/60 flex items-start gap-2.5 text-xs text-industrial-500">
-        <Info className="w-4 h-4 text-industrial-400 shrink-0 mt-0.5" />
-        <div>
-          Raw and filtered intermediate time-series arrays are preserved in backend memory during execution but
-          omitted from the JSON payload to prevent transmission delays over the network. The demodulated Hilbert envelope
-          and its FFT spectrum are transmitted and rendered above.
+      {/* Pipeline Memory Note */}
+      <div className="p-3.5 bg-[#FBFBFD] rounded-xl border border-[#E5E5EA] flex items-start gap-2.5 text-[12px] text-[#6E6E73]">
+        <Info className="w-4 h-4 text-[#86868B] shrink-0 mt-0.5" />
+        <div className="leading-relaxed">
+          Intermediate arrays are filtered in backend memory via Second-Order Sections (SOS). Demodulated Hilbert analytic envelope samples and frequency-domain harmonic bins are rendered below.
         </div>
       </div>
     </div>
   );
 };
+
+export default WaveformNotice;

@@ -17,9 +17,21 @@ import numpy as np
 import pandas as pd
 import scipy.signal
 import scipy.stats
+import logging
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, model_validator
+
+from app.ai_interpreter import (
+    InterpretRequest,
+    generate_interpretation,
+    get_groq_api_key,
+)
+
+logger = logging.getLogger("acousticsense.main")
+
+# Auto-load environment variables from .env
+get_groq_api_key()
 
 # ---------------------------------------------------------------------------
 # Configuration & In-Memory Storage
@@ -29,8 +41,9 @@ MAX_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024  # 50 MB limit
 DEFAULT_BLOCK_LENGTH = 1024
 MIN_SIGNAL_SAMPLES = 32
 
-# In-memory dictionary for storing uploaded signals
+# In-memory dictionaries for storing uploaded signals and computed analyses
 signals_db: dict[str, dict[str, Any]] = {}
+analyses_db: dict[str, dict[str, Any]] = {}
 
 # ---------------------------------------------------------------------------
 # FastAPI Application & CORS
@@ -46,14 +59,19 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS setup for Vite frontend development
-cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173")
-allowed_origins = [orig.strip() for orig in cors_origins_env.split(",") if orig.strip()]
+# CORS setup for local development and cloud production deployments (Vercel, Render)
+cors_origins_env = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173",
+)
+raw_origins = [orig.strip() for orig in cors_origins_env.split(",") if orig.strip()]
+allow_all = "*" in raw_origins
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins if allowed_origins else ["*"],
-    allow_credentials=True,
+    allow_origins=["*"] if allow_all else raw_origins,
+    allow_origin_regex=None if allow_all else r"^https?://([a-zA-Z0-9_.-]+\.)*vercel\.app(:[0-9]+)?$",
+    allow_credentials=not allow_all,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -810,12 +828,25 @@ def run_block_length_experiment(
 # ---------------------------------------------------------------------------
 
 
+@app.get("/", summary="Root Status")
+def root_status() -> dict[str, str]:
+    """Root health/status endpoint for cloud deployment checks (Render, etc.)."""
+    return {
+        "status": "ok",
+        "service": "AcousticSense Classical DSP API",
+        "version": "1.0.0",
+        "docs_url": "/docs",
+    }
+
+
+@app.get("/health", summary="Health Check Alias")
 @app.get("/api/health", summary="Health Check")
 def health_check() -> dict[str, str]:
     """Returns the operational status of the service."""
     return {
         "status": "ok",
         "service": "Acoustic Emission Fault Detection API",
+        "version": "1.0.0",
     }
 
 
@@ -1038,7 +1069,10 @@ def run_analysis(request: AnalysisRequest) -> dict[str, Any]:
     sample_count = len(signal_data)
     duration_seconds = sample_count / effective_fs
 
+    analysis_id = f"an_{uuid.uuid4().hex[:12]}"
+
     result = {
+        "analysis_id": analysis_id,
         "signal": {
             "signal_id": request.signal_id,
             "sampling_frequency": effective_fs,
@@ -1054,7 +1088,117 @@ def run_analysis(request: AnalysisRequest) -> dict[str, Any]:
         "performance": pipeline_output["performance"],
     }
 
+    # Store analysis in memory for AI interpretation and reproducibility
+    signals_db[request.signal_id]["latest_analysis"] = result
+    signals_db[request.signal_id]["latest_analysis_id"] = analysis_id
+    signals_db[request.signal_id]["latest_parameters"] = request.model_dump()
+    analyses_db[analysis_id] = {
+        "analysis_id": analysis_id,
+        "signal_id": request.signal_id,
+        "result": result,
+        "parameters": request.model_dump(),
+        "created_at": time.time(),
+        "cached_interpretation": None,
+    }
+
     return sanitize_for_json(result)
+
+
+@app.post("/api/analysis/interpret", summary="Generate AI Interpretation of DSP Analysis")
+async def interpret_analysis(request: InterpretRequest) -> dict[str, Any]:
+    """Generates an AI-powered scientific explanation of a completed DSP analysis using Groq."""
+    # 1. Verify signal exists
+    if request.signal_id not in signals_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Signal with ID '{request.signal_id}' not found.",
+        )
+    signal_entry = signals_db[request.signal_id]
+
+    # 2. Locate the analysis result
+    analysis_entry: Optional[dict[str, Any]] = None
+    if request.analysis_id:
+        analysis_entry = analyses_db.get(request.analysis_id)
+        if not analysis_entry or analysis_entry["signal_id"] != request.signal_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Analysis with ID '{request.analysis_id}' not found for signal '{request.signal_id}'.",
+            )
+    else:
+        # Check latest analysis on the signal
+        latest_id = signal_entry.get("latest_analysis_id")
+        if latest_id and latest_id in analyses_db:
+            analysis_entry = analyses_db[latest_id]
+
+    if not analysis_entry:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No completed DSP analysis found for this signal. Please run an analysis first.",
+        )
+
+    # 3. Check cached interpretation for this specific analysis
+    if analysis_entry.get("cached_interpretation") is not None:
+        cached = analysis_entry["cached_interpretation"]
+        return sanitize_for_json(cached.model_dump())
+
+    # 4. Generate interpretation via Groq
+    try:
+        interpretation = await generate_interpretation(
+            analysis_id=analysis_entry["analysis_id"],
+            signal_id=request.signal_id,
+            analysis_result=analysis_entry["result"],
+            signal_meta={"filename": signal_entry.get("filename")},
+            parameters=analysis_entry.get("parameters"),
+        )
+        # Cache on the analysis entry
+        analysis_entry["cached_interpretation"] = interpretation
+        return sanitize_for_json(interpretation.model_dump())
+    except ValueError as exc:
+        if "GROQ_API_KEY" in str(exc):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Groq AI interpretation is not configured. Please set GROQ_API_KEY in the backend environment.",
+            ) from exc
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI interpretation parsing error: {str(exc)}",
+        ) from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Groq API authentication failed. Please check backend GROQ_API_KEY configuration.",
+        ) from exc
+    except TimeoutError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Upstream AI request timed out. Please try again.",
+        ) from exc
+    except ConnectionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Unable to communicate with Groq AI service. Please check network connection.",
+        ) from exc
+    except RuntimeError as exc:
+        if "already being generated" in str(exc):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="An interpretation is already being generated for this analysis. Please wait.",
+            ) from exc
+        if "rate limit" in str(exc).lower():
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Groq API rate limit exceeded. Please wait a moment and try again.",
+            ) from exc
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI service error: {str(exc)}",
+        ) from exc
+    except Exception as exc:
+        logger.error(f"Unexpected error in interpret_analysis: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate AI interpretation due to an unexpected server error.",
+        ) from exc
 
 
 @app.post("/api/experiments/block-length", summary="Run Block-Length Experiment")

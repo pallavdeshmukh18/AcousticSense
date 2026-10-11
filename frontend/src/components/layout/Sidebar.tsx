@@ -5,82 +5,77 @@ import {
   Activity,
   Waves,
   FlaskConical,
-  Radio,
-  FileAudio,
+  ShieldCheck,
   Menu,
   X,
-  Server,
   Trash2,
-  Home,
-  ShieldCheck,
+  FileText,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { uploadedSignal, backendConnected, clearSession } = useSignal();
+  const { uploadedSignal, clearSession } = useSignal();
 
   const navItems = [
     {
       to: '/dashboard',
       label: 'Dashboard',
       icon: Activity,
-      description: 'System overview & DSP pipeline',
     },
     {
       to: '/analysis',
       label: 'Signal Analysis',
       icon: Waves,
-      description: 'Upload & complete 8-stage DSP',
     },
     {
       to: '/experiments',
       label: 'Experiment Lab',
       icon: FlaskConical,
-      description: 'Block-length evaluations',
     },
     {
       to: '/benchmark',
       label: 'Benchmark Suite',
       icon: ShieldCheck,
-      description: 'CWRU dataset validation & ROC',
-    },
-    {
-      to: '/',
-      label: 'Landing Page',
-      icon: Home,
-      description: 'Presentation & architecture',
     },
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-white border-r border-industrial-200 w-64 select-none">
+    <div className="flex flex-col h-full bg-[#FFFFFF] border-r border-[#E5E5EA] w-64 select-none text-[#1D1D1F]">
       {/* Brand Header */}
-      <div className="p-5 border-b border-industrial-100 flex items-center justify-between">
-        <NavLink to="/" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform">
-            <Radio className="w-5 h-5" />
+      <div className="h-14 px-5 border-b border-[#E5E5EA] flex items-center justify-between">
+        <NavLink to="/dashboard" className="flex items-center gap-2.5 group">
+          {/* Restrained Precision Sensor Symbol */}
+          <div className="w-7 h-7 rounded-lg bg-[#F5F5F7] border border-[#E5E5EA] flex items-center justify-center text-[#1D1D1F] transition-colors group-hover:bg-[#E5E5EA]">
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-[#0071E3]" aria-hidden="true">
+              <path d="M12 2L13.8 8.2L20 6.5L15.8 11.2L21.5 14L15.5 15.5L16.8 21.8L12 17.5L7.2 21.8L8.5 15.5L2.5 14L8.2 11.2L4 6.5L10.2 8.2L12 2Z" />
+            </svg>
           </div>
-          <div>
-            <div className="font-semibold text-industrial-900 tracking-tight leading-none text-base group-hover:text-primary-600 transition-colors">
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-semibold text-[15px] tracking-tight text-[#1D1D1F]">
               AcousticSense
-            </div>
-            <div className="text-[11px] text-industrial-500 font-medium mt-1 leading-tight">
-              Acoustic Emission Fault Detection
-            </div>
+            </span>
+            <span className="text-[10px] text-[#86868B] font-mono tracking-normal">
+              v2.4
+            </span>
           </div>
         </NavLink>
         {mobileOpen && (
           <button
             onClick={() => setMobileOpen(false)}
-            className="md:hidden text-industrial-400 hover:text-industrial-600 p-1 rounded"
+            className="md:hidden text-[#86868B] hover:text-[#1D1D1F] p-1 rounded-md"
+            aria-label="Close menu"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 p-3 space-y-1">
+      {/* Navigation Section */}
+      <div className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
+        <div className="px-3 pb-2 text-[11px] font-medium text-[#86868B] uppercase tracking-wider">
+          Workspace
+        </div>
+
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -90,97 +85,83 @@ export const Sidebar: React.FC = () => {
               end={item.to === '/'}
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
-                `flex items-start gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors duration-150 ${
                   isActive
-                    ? 'bg-primary-50 text-primary-700 border border-primary-100/80 shadow-xs'
-                    : 'text-industrial-600 hover:text-industrial-900 hover:bg-industrial-100/60'
+                    ? 'bg-[#0071E3]/10 text-[#0071E3] font-medium'
+                    : 'text-[#1D1D1F] hover:bg-[#F5F5F7] font-normal'
                 }`
               }
             >
-              <Icon className="w-4 h-4 mt-0.5 shrink-0" />
-              <div>
-                <div className="leading-tight">{item.label}</div>
-                <div className="text-[11px] text-industrial-400 font-normal mt-0.5 leading-tight">
-                  {item.description}
-                </div>
-              </div>
+              {({ isActive }) => (
+                <>
+                  <Icon
+                    className={`w-4 h-4 shrink-0 transition-colors ${
+                      isActive ? 'text-[#0071E3]' : 'text-[#6E6E73]'
+                    }`}
+                    strokeWidth={isActive ? 2 : 1.75}
+                  />
+                  <span className="truncate">{item.label}</span>
+                </>
+              )}
             </NavLink>
           );
         })}
-      </nav>
+      </div>
 
-      {/* Active Session Signal Badge */}
+      {/* Active Signal Mini Inspector (native macOS inspector style) */}
       {uploadedSignal && (
-        <div className="mx-3 mb-3 p-2.5 rounded-lg bg-industrial-50 border border-industrial-200/80 text-xs">
-          <div className="flex items-center justify-between text-industrial-500 mb-1.5 font-medium">
-            <span className="flex items-center gap-1.5">
-              <FileAudio className="w-3.5 h-3.5 text-primary-600" />
+        <div className="mx-3 mb-3 p-3 bg-[#FBFBFD] border border-[#E5E5EA] rounded-xl text-xs">
+          <div className="flex items-center justify-between text-[#6E6E73] mb-1.5 font-medium">
+            <span className="flex items-center gap-1.5 text-[11px] text-[#1D1D1F] font-medium">
+              <FileText className="w-3.5 h-3.5 text-[#0071E3]" />
               Active Signal
             </span>
             <button
               onClick={clearSession}
-              title="Clear current session signal"
-              className="text-industrial-400 hover:text-rose-600 p-0.5 rounded transition-colors"
+              title="Remove signal from working session"
+              className="text-[#86868B] hover:text-[#FF3B30] p-0.5 rounded transition-colors"
+              aria-label="Clear active signal"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="font-mono text-industrial-800 truncate font-medium text-[11px]" title={uploadedSignal.filename}>
+          <div
+            className="text-[12px] font-medium text-[#1D1D1F] truncate"
+            title={uploadedSignal.filename}
+          >
             {uploadedSignal.filename}
           </div>
-          <div className="text-[10px] text-industrial-500 mt-1 flex justify-between font-mono">
-            <span>{uploadedSignal.sample_count.toLocaleString()} samples</span>
-            <span>{uploadedSignal.sampling_frequency ? `${uploadedSignal.sampling_frequency} Hz` : 'No Fs'}</span>
+          <div className="text-[11px] text-[#86868B] mt-1 flex justify-between font-mono tabular-nums">
+            <span>{uploadedSignal.sample_count.toLocaleString()} pts</span>
+            <span>
+              {uploadedSignal.sampling_frequency
+                ? `${uploadedSignal.sampling_frequency >= 1000 ? `${(uploadedSignal.sampling_frequency / 1000).toFixed(0)} kHz` : `${uploadedSignal.sampling_frequency} Hz`}`
+                : 'No Fs'}
+            </span>
           </div>
         </div>
       )}
 
-      {/* Footer Backend Connection Status */}
-      <div className="p-3.5 border-t border-industrial-100 bg-industrial-50/50 text-xs">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1.5 text-industrial-600 font-medium">
-            <Server className="w-3.5 h-3.5 text-industrial-400" />
-            DSP Backend
-          </span>
-          <span
-            className={`inline-flex items-center gap-1 font-medium text-[11px] ${
-              backendConnected === true
-                ? 'text-emerald-700'
-                : backendConnected === false
-                ? 'text-rose-600'
-                : 'text-industrial-500'
-            }`}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                backendConnected === true
-                  ? 'bg-emerald-500'
-                  : backendConnected === false
-                  ? 'bg-rose-500'
-                  : 'bg-industrial-400'
-              }`}
-            />
-            {backendConnected === true ? 'Online' : backendConnected === false ? 'Offline' : 'Connecting...'}
-          </span>
-        </div>
-        <div className="text-[10px] text-industrial-400 mt-1 font-mono">http://localhost:8000</div>
-      </div>
     </div>
   );
 
   return (
     <>
-      {/* Mobile Menu Button Bar */}
-      <div className="md:hidden bg-white border-b border-industrial-200 px-4 py-3 flex items-center justify-between">
+      {/* Mobile Top Navigation Bar */}
+      <div className="md:hidden bg-[#FFFFFF] border-b border-[#E5E5EA] px-4 py-3 flex items-center justify-between text-[#1D1D1F]">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-primary-600 flex items-center justify-center text-white">
-            <Radio className="w-4 h-4" />
+          <div className="w-6 h-6 rounded-md bg-[#F5F5F7] border border-[#E5E5EA] flex items-center justify-center">
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current text-[#0071E3]">
+              <path d="M12 2L13.8 8.2L20 6.5L15.8 11.2L21.5 14L15.5 15.5L16.8 21.8L12 17.5L7.2 21.8L8.5 15.5L2.5 14L8.2 11.2L4 6.5L10.2 8.2L12 2Z" />
+            </svg>
           </div>
-          <span className="font-semibold text-industrial-800 text-sm">AcousticSense</span>
+          <span className="font-semibold text-sm tracking-tight text-[#1D1D1F]">
+            AcousticSense
+          </span>
         </div>
         <button
           onClick={() => setMobileOpen(true)}
-          className="text-industrial-600 hover:text-industrial-900 p-1 rounded"
+          className="text-[#6E6E73] hover:text-[#1D1D1F] p-1.5 rounded-md"
           aria-label="Open navigation menu"
         >
           <Menu className="w-5 h-5" />
@@ -188,13 +169,15 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Desktop Persistent Sidebar */}
-      <aside className="hidden md:block shrink-0 h-screen sticky top-0">{sidebarContent}</aside>
+      <aside className="hidden md:block shrink-0 h-screen sticky top-0 z-30">
+        {sidebarContent}
+      </aside>
 
       {/* Mobile Overlay Drawer */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div
-            className="fixed inset-0 bg-black/30 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/20 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileOpen(false)}
           />
           <div className="relative z-10">{sidebarContent}</div>

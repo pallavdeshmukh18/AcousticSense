@@ -11,6 +11,8 @@ import {
   PrecisionExperimentResponse,
   RingingExperimentRequest,
   RingingExperimentResponse,
+  InterpretRequest,
+  InterpretationResponse,
 } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -143,6 +145,19 @@ export const apiService = {
   ): Promise<RingingExperimentResponse> {
     const response = await apiClient.post<RingingExperimentResponse>(
       '/api/experiments/ringing',
+      request
+    );
+    return response.data;
+  },
+
+  /**
+   * Generates a step-by-step AI scientific explanation and interpretation using Groq.
+   */
+  async interpretAnalysis(
+    request: InterpretRequest
+  ): Promise<InterpretationResponse> {
+    const response = await apiClient.post<InterpretationResponse>(
+      '/api/analysis/interpret',
       request
     );
     return response.data;

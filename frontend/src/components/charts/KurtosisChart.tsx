@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plot } from './PlotWrapper';
 import { SpectralKurtosis } from '../../types/api';
-import { Sparkles, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 interface KurtosisChartProps {
   spectralKurtosis: SpectralKurtosis;
@@ -15,35 +15,39 @@ export const KurtosisChart: React.FC<KurtosisChartProps> = ({ spectralKurtosis }
   }
 
   const bandLabels = candidate_bands.map(
-    (b) => `${b.low_hz.toFixed(0)} - ${b.high_hz.toFixed(0)} Hz`
+    (b) => `${b.low_hz.toFixed(0)} – ${b.high_hz.toFixed(0)} Hz`
   );
   const kurtosisValues = candidate_bands.map((b) => b.kurtosis);
 
   const colors = candidate_bands.map((b) =>
     b.low_hz === selected_band.low_hz && b.high_hz === selected_band.high_hz
-      ? '#2563eb' // Selected highlighted band: muted primary blue
-      : '#cbd5e1' // Other candidate bands: neutral slate
+      ? '#0071E3' // Selected highlighted band: Apple blue
+      : '#E5E5EA' // Other candidate bands: subtle gray
   );
 
   return (
-    <div className="bg-white border border-industrial-200 rounded-xl p-5 shadow-xs">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+    <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-6 shadow-subtle space-y-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <div className="flex items-center gap-2">
-            <h4 className="text-xs font-semibold text-industrial-800 uppercase tracking-wider font-mono">
-              Stage 3: Spectral Kurtosis Across Candidate Sub-Bands
+          <span className="text-[11px] font-mono text-[#0071E3] uppercase tracking-wider font-semibold">
+            Stage 04 &bull; Resonance Screening
+          </span>
+          <div className="flex flex-wrap items-center gap-2 mt-0.5">
+            <h4 className="text-[15px] font-semibold text-[#1D1D1F] tracking-tight">
+              Spectral Kurtosis Across Candidate Sub-Bands
             </h4>
-            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-primary-50 text-primary-700 border border-primary-200">
-              <Sparkles className="w-3 h-3" />
-              Selected: {selected_band.low_hz.toFixed(0)} - {selected_band.high_hz.toFixed(0)} Hz
+            <span className="inline-flex items-center gap-1 text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-[#F0F6FF] text-[#0071E3] border border-[#0071E3]/20">
+              Selected: {selected_band.low_hz.toFixed(0)} – {selected_band.high_hz.toFixed(0)} Hz
             </span>
           </div>
         </div>
-        <span className="text-[11px] font-mono text-industrial-500">
+        <span className="text-[11px] font-mono text-[#6E6E73] bg-[#F5F5F7] px-2.5 py-1 rounded-md self-start sm:self-auto tabular-nums">
           Peak Kurtosis: {selected_band.kurtosis.toFixed(2)}
         </span>
       </div>
 
+      {/* Chart */}
       <div className="w-full h-64">
         <Plot
           data={[
@@ -56,33 +60,33 @@ export const KurtosisChart: React.FC<KurtosisChartProps> = ({ spectralKurtosis }
                 line: {
                   color: candidate_bands.map((b) =>
                     b.low_hz === selected_band.low_hz && b.high_hz === selected_band.high_hz
-                      ? '#1d4ed8'
-                      : '#94a3b8'
+                      ? '#005bb5'
+                      : '#D1D1D6'
                   ),
                   width: 1,
                 },
               },
               hoverinfo: 'x+y',
-              hovertemplate: '%{x}<br>Kurtosis: %{y:.3f}<extra></extra>',
+              hovertemplate: '%{x}<br>Excess Kurtosis: %{y:.3f}<extra></extra>',
             },
           ]}
           layout={{
             autosize: true,
             margin: { l: 50, r: 25, t: 20, b: 60 },
             xaxis: {
-              title: { text: 'Candidate Frequency Band (Hz)', font: { size: 11, color: '#64748b' } },
-              tickfont: { size: 10, color: '#64748b', family: 'JetBrains Mono, monospace' },
-              gridcolor: '#f1f5f9',
+              title: { text: 'Candidate Frequency Band (Hz)', font: { size: 11, color: '#6E6E73' } },
+              tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+              gridcolor: '#F2F2F7',
             },
             yaxis: {
-              title: { text: 'Excess Kurtosis', font: { size: 11, color: '#64748b' } },
-              tickfont: { size: 10, color: '#64748b', family: 'JetBrains Mono, monospace' },
-              gridcolor: '#f1f5f9',
+              title: { text: 'Excess Kurtosis', font: { size: 11, color: '#6E6E73' } },
+              tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+              gridcolor: '#F2F2F7',
               zeroline: true,
-              zerolinecolor: '#cbd5e1',
+              zerolinecolor: '#E5E5EA',
             },
-            plot_bgcolor: '#ffffff',
-            paper_bgcolor: '#ffffff',
+            plot_bgcolor: '#FFFFFF',
+            paper_bgcolor: '#FFFFFF',
           }}
           useResizeHandler={true}
           style={{ width: '100%', height: '100%' }}
@@ -90,13 +94,16 @@ export const KurtosisChart: React.FC<KurtosisChartProps> = ({ spectralKurtosis }
         />
       </div>
 
-      <div className="mt-3 p-2.5 bg-industrial-50 rounded-lg border border-industrial-200/60 flex items-start gap-2 text-[11px] text-industrial-500">
-        <Info className="w-3.5 h-3.5 text-industrial-400 shrink-0 mt-0.5" />
-        <div>
+      {/* Methodological Context Note */}
+      <div className="p-3.5 bg-[#FBFBFD] rounded-xl border border-[#E5E5EA] flex items-start gap-2.5 text-[12px] text-[#6E6E73]">
+        <Info className="w-4 h-4 text-[#86868B] shrink-0 mt-0.5" />
+        <div className="leading-relaxed">
           {method_note ||
-            'Kurtosis calculated over filtered candidate frequency bands is a simplified band-selection method and is not equivalent to a full spectral-kurtosis estimator or fast kurtogram.'}
+            'Notice: Stage 4 evaluates discrete candidate sub-bands using 4th-order Fisher excess kurtosis. This is a simplified screening procedure to select the optimal carrier band for subsequent filtering, and does not constitute a full continuous spectral-kurtosis estimator or fast kurtogram.'}
         </div>
       </div>
     </div>
   );
 };
+
+export default KurtosisChart;

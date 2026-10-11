@@ -3,12 +3,14 @@ import { useSignal } from '../../context/SignalContext';
 import { apiService, extractErrorMessage } from '../../services/api';
 import {
   UploadCloud,
-  FileCheck,
+  FileCheck2,
   AlertCircle,
   Clock,
   Activity,
   Layers,
   ArrowRight,
+  RefreshCw,
+  FileAudio,
 } from 'lucide-react';
 
 interface SignalUploaderProps {
@@ -24,20 +26,22 @@ export const SignalUploader: React.FC<SignalUploaderProps> = ({ onUploadSuccess 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isReplacing, setIsReplacing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelection = (file: File) => {
     setErrorMessage(null);
     const ext = file.name.split('.').pop()?.toLowerCase();
     if (ext !== 'csv' && ext !== 'wav') {
-      setErrorMessage('Unsupported file format. Please upload a .wav audio or .csv numerical signal file.');
+      setErrorMessage('Unsupported file format. Please provide a .wav audio or .csv time-series file.');
       return;
     }
     if (file.size > 50 * 1024 * 1024) {
-      setErrorMessage('File exceeds the 50 MB maximum size limit.');
+      setErrorMessage('File size exceeds the 50 MB limit.');
       return;
     }
     setSelectedFile(file);
+    setIsReplacing(false);
   };
 
   const onDragOver = (e: React.DragEvent) => {
@@ -79,6 +83,7 @@ export const SignalUploader: React.FC<SignalUploaderProps> = ({ onUploadSuccess 
       );
       setUploadedSignal(res);
       setSelectedFile(null);
+      setIsReplacing(false);
       if (onUploadSuccess) {
         onUploadSuccess();
       }
@@ -89,213 +94,281 @@ export const SignalUploader: React.FC<SignalUploaderProps> = ({ onUploadSuccess 
     }
   };
 
+  const fileExtension = selectedFile?.name.split('.').pop()?.toUpperCase() || '';
+  const isCSV = fileExtension === 'CSV';
+
   return (
-    <div className="bg-white border border-industrial-200 rounded-xl p-6 shadow-xs">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-6 shadow-subtle transition-shadow">
+      {/* Section Header */}
+      <div className="flex items-start justify-between mb-5">
         <div>
-          <h2 className="text-base font-semibold text-industrial-800">Signal File Ingestion</h2>
-          <p className="text-xs text-industrial-500 mt-0.5">
-            Accepts raw acoustic emission and vibration sensor recordings in WAV or CSV formats.
+          <h2 className="text-[15px] font-semibold text-[#1D1D1F] tracking-tight">
+            Signal input
+          </h2>
+          <p className="text-[13px] text-[#6E6E73] mt-0.5">
+            {uploadedSignal && !isReplacing
+              ? 'Active waveform loaded in working session.'
+              : 'Import a recording to begin.'}
           </p>
         </div>
-        <span className="text-xs bg-industrial-100 text-industrial-600 px-2.5 py-1 rounded font-mono">
-          Max: 50 MB
-        </span>
-      </div>
 
-      {/* Drag & Drop Surface */}
-      <div
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-lg p-7 text-center cursor-pointer transition-colors ${
-          isDragging
-            ? 'border-primary-500 bg-primary-50/50'
-            : selectedFile
-            ? 'border-emerald-400 bg-emerald-50/30'
-            : 'border-industrial-200 hover:border-industrial-300 hover:bg-industrial-50/50'
-        }`}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".csv,.wav,audio/wav,text/csv"
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files && e.target.files[0]) {
-              handleFileSelection(e.target.files[0]);
-            }
-          }}
-        />
-
-        {selectedFile ? (
-          <div className="flex flex-col items-center">
-            <div className="w-11 h-11 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2">
-              <FileCheck className="w-6 h-6" />
-            </div>
-            <p className="text-sm font-semibold text-industrial-800 font-mono">{selectedFile.name}</p>
-            <p className="text-xs text-industrial-500 mt-1">
-              {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready to upload
-            </p>
-            <p className="text-[11px] text-primary-600 mt-2 underline">Click or drop another file to change</p>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center">
-            <div className="w-11 h-11 rounded-full bg-industrial-100 text-industrial-500 flex items-center justify-center mb-2">
-              <UploadCloud className="w-6 h-6" />
-            </div>
-            <p className="text-sm font-medium text-industrial-700">
-              Drag and drop your signal file here, or{' '}
-              <span className="text-primary-600 font-semibold underline">browse</span>
-            </p>
-            <p className="text-xs text-industrial-400 mt-1 font-mono">Supported: .WAV (PCM audio) or .CSV (numerical)</p>
-          </div>
+        {uploadedSignal && !selectedFile && !isReplacing && (
+          <button
+            type="button"
+            onClick={() => setIsReplacing(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium text-[#0071E3] hover:text-[#0077ED] bg-[#F0F6FF] hover:bg-[#E5F0FF] transition-colors"
+          >
+            <RefreshCw className="w-3 h-3" />
+            <span>Replace signal</span>
+          </button>
         )}
       </div>
 
-      {/* Optional Metadata Controls */}
-      {selectedFile && (
-        <div className="mt-4 pt-4 border-t border-industrial-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-industrial-700 mb-1">
-              CSV Signal Column Name <span className="text-industrial-400 font-normal">(Optional)</span>
-            </label>
-            <input
-              type="text"
-              value={columnName}
-              onChange={(e) => setColumnName(e.target.value)}
-              placeholder="e.g. vibration, acceleration"
+      {/* Hidden Native File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv,.wav,audio/wav,text/csv"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFileSelection(e.target.files[0]);
+          }
+        }}
+      />
+
+      {/* View 1: Staged File (Preparing to Upload) */}
+      {selectedFile ? (
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl border border-[#0071E3]/30 bg-[#F0F6FF]/60 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-[#0071E3]/10 text-[#0071E3] flex items-center justify-center shrink-0">
+                <FileCheck2 className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-[#1D1D1F] font-mono truncate max-w-xs sm:max-w-md">
+                  {selectedFile.name}
+                </p>
+                <p className="text-[11px] text-[#6E6E73] font-mono tabular-nums">
+                  {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB &bull; {fileExtension} format
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="w-full text-xs px-3 py-2 border border-industrial-300 rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary-500 font-mono"
-            />
-            <p className="text-[11px] text-industrial-400 mt-1">
-              Required if CSV contains multiple columns (e.g. time, ch1).
-            </p>
+              className="text-[12px] text-[#0071E3] hover:text-[#0077ED] font-medium underline"
+            >
+              Choose different
+            </button>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-industrial-700 mb-1">
-              Sampling Frequency (Hz) <span className="text-industrial-400 font-normal">(Optional for WAV)</span>
-            </label>
-            <input
-              type="number"
-              value={samplingFrequency}
-              onChange={(e) => setSamplingFrequency(e.target.value)}
-              placeholder="e.g. 48000"
-              disabled={isUploading}
-              min="1"
-              step="any"
-              className="w-full text-xs px-3 py-2 border border-industrial-300 rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary-500 font-mono"
-            />
-            <p className="text-[11px] text-industrial-400 mt-1">
-              WAV files extract Fs automatically; can be specified now or during analysis.
-            </p>
-          </div>
-        </div>
-      )}
+          {/* Optional Staging Parameters */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            {isCSV && (
+              <div>
+                <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
+                  CSV Signal Column <span className="text-[#86868B] font-normal">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={columnName}
+                  onChange={(e) => setColumnName(e.target.value)}
+                  placeholder="e.g. DE_time, vibration"
+                  disabled={isUploading}
+                  className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono text-[#1D1D1F] transition-colors"
+                />
+                <span className="text-[11px] text-[#86868B] mt-1 block">
+                  Select channel if multiple columns exist.
+                </span>
+              </div>
+            )}
 
-      {/* Progress Bar */}
-      {isUploading && (
-        <div className="mt-4">
-          <div className="flex justify-between text-xs text-industrial-600 mb-1 font-mono">
-            <span>Uploading & Validating...</span>
-            <span>{uploadProgress}%</span>
-          </div>
-          <div className="w-full bg-industrial-100 rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-primary-600 h-1.5 rounded-full transition-all duration-200"
-              style={{ width: `${uploadProgress}%` }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Error Message Banner */}
-      {errorMessage && (
-        <div className="mt-4 p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-2.5 text-xs text-rose-800">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-          <div className="flex-1">{errorMessage}</div>
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      {selectedFile && (
-        <div className="mt-4 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => setSelectedFile(null)}
-            disabled={isUploading}
-            className="px-3.5 py-1.5 text-xs font-medium text-industrial-600 hover:text-industrial-800 hover:bg-industrial-100 rounded-md transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleUpload}
-            disabled={isUploading}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium bg-primary-600 hover:bg-primary-700 text-white rounded-md shadow-xs transition-colors disabled:opacity-50"
-          >
-            <span>Upload Signal</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
-
-      {/* Currently Stored Signal Card */}
-      {uploadedSignal && !selectedFile && (
-        <div className="mt-4 p-4 bg-industrial-50 border border-industrial-200 rounded-lg">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-xs font-semibold text-industrial-700 font-mono">
-                {uploadedSignal.filename}
+            <div>
+              <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
+                Sampling Frequency <span className="text-[#86868B] font-normal">(Optional for WAV)</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  value={samplingFrequency}
+                  onChange={(e) => setSamplingFrequency(e.target.value)}
+                  placeholder={isCSV ? 'e.g. 12000 or 48000' : 'Extracted from WAV header'}
+                  disabled={isUploading}
+                  min="1"
+                  step="any"
+                  className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono tabular-nums text-[#1D1D1F] transition-colors"
+                />
+                <span className="absolute right-3 top-2.5 text-[11px] text-[#86868B] font-mono pointer-events-none">
+                  Hz
+                </span>
+              </div>
+              <span className="text-[11px] text-[#86868B] mt-1 block">
+                {isCSV ? 'Required for accurate Fourier axes.' : 'WAV file headers provide this automatically.'}
               </span>
             </div>
-            <span className="text-[11px] font-mono text-industrial-400 bg-white px-2 py-0.5 rounded border border-industrial-200">
-              ID: {uploadedSignal.signal_id}
-            </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div className="bg-white p-2 rounded border border-industrial-200/60">
-              <span className="text-industrial-400 block text-[10px] uppercase font-mono flex items-center gap-1">
-                <Layers className="w-3 h-3 text-industrial-400" /> Samples
+          {/* Upload Progress Bar */}
+          {isUploading && (
+            <div className="space-y-1.5 pt-1">
+              <div className="flex justify-between text-[11px] font-mono text-[#6E6E73]">
+                <span>Ingesting & validating waveform...</span>
+                <span className="font-semibold text-[#0071E3] tabular-nums">{uploadProgress}%</span>
+              </div>
+              <div className="w-full bg-[#F5F5F7] rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-[#0071E3] h-1.5 rounded-full transition-all duration-200"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-2.5 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedFile(null);
+                setIsReplacing(false);
+              }}
+              disabled={isUploading}
+              className="px-3.5 py-1.5 text-[13px] font-medium text-[#6E6E73] hover:text-[#1D1D1F] rounded-lg hover:bg-[#F5F5F7] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleUpload}
+              disabled={isUploading}
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[13px] font-medium text-white bg-[#0071E3] hover:bg-[#0077ED] rounded-full shadow-subtle transition-colors disabled:opacity-50"
+            >
+              <span>{isUploading ? 'Uploading…' : 'Import signal'}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      ) : uploadedSignal && !isReplacing ? (
+        /* View 2: Loaded Active Signal Summary */
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl border border-[#E5E5EA] bg-[#FBFBFD] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-[#34C759]/10 text-[#34C759] flex items-center justify-center shrink-0">
+                <FileAudio className="w-5 h-5 text-[#248A3D]" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] font-semibold text-[#1D1D1F] font-mono truncate max-w-xs sm:max-w-md">
+                    {uploadedSignal.filename}
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#34C759]" />
+                </div>
+                <p className="text-[11px] font-mono text-[#86868B]">
+                  ID: {uploadedSignal.signal_id}
+                </p>
+              </div>
+            </div>
+
+            <div className="text-[11px] font-mono text-[#6E6E73] bg-[#FFFFFF] px-2.5 py-1 rounded-md border border-[#E5E5EA] self-start sm:self-auto">
+              In-Memory Session
+            </div>
+          </div>
+
+          {/* Signal Metadata Metrics Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+            <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#E5E5EA]">
+              <span className="text-[#86868B] block text-[10px] uppercase font-mono flex items-center gap-1">
+                <Layers className="w-3 h-3 text-[#86868B]" /> Samples
               </span>
-              <span className="font-semibold text-industrial-800 font-mono mt-0.5 block">
+              <span className="font-semibold text-[#1D1D1F] font-mono tabular-nums text-[13px] mt-1 block">
                 {uploadedSignal.sample_count.toLocaleString()}
               </span>
             </div>
 
-            <div className="bg-white p-2 rounded border border-industrial-200/60">
-              <span className="text-industrial-400 block text-[10px] uppercase font-mono flex items-center gap-1">
-                <Activity className="w-3 h-3 text-industrial-400" /> Sampling Rate
+            <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#E5E5EA]">
+              <span className="text-[#86868B] block text-[10px] uppercase font-mono flex items-center gap-1">
+                <Activity className="w-3 h-3 text-[#86868B]" /> Sampling Rate
               </span>
-              <span className="font-semibold text-industrial-800 font-mono mt-0.5 block">
-                {uploadedSignal.sampling_frequency ? `${uploadedSignal.sampling_frequency.toLocaleString()} Hz` : 'Not Defined'}
-              </span>
-            </div>
-
-            <div className="bg-white p-2 rounded border border-industrial-200/60">
-              <span className="text-industrial-400 block text-[10px] uppercase font-mono flex items-center gap-1">
-                <Clock className="w-3 h-3 text-industrial-400" /> Duration
-              </span>
-              <span className="font-semibold text-industrial-800 font-mono mt-0.5 block">
-                {uploadedSignal.duration_seconds ? `${uploadedSignal.duration_seconds.toFixed(3)} s` : 'N/A'}
+              <span className="font-semibold text-[#1D1D1F] font-mono tabular-nums text-[13px] mt-1 block">
+                {uploadedSignal.sampling_frequency
+                  ? `${uploadedSignal.sampling_frequency.toLocaleString()} Hz`
+                  : 'Not specified'}
               </span>
             </div>
 
-            <div className="bg-white p-2 rounded border border-industrial-200/60">
-              <span className="text-industrial-400 block text-[10px] uppercase font-mono">
+            <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#E5E5EA]">
+              <span className="text-[#86868B] block text-[10px] uppercase font-mono flex items-center gap-1">
+                <Clock className="w-3 h-3 text-[#86868B]" /> Duration
+              </span>
+              <span className="font-semibold text-[#1D1D1F] font-mono tabular-nums text-[13px] mt-1 block">
+                {uploadedSignal.duration_seconds
+                  ? `${uploadedSignal.duration_seconds.toFixed(3)} s`
+                  : 'N/A'}
+              </span>
+            </div>
+
+            <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#E5E5EA]">
+              <span className="text-[#86868B] block text-[10px] uppercase font-mono">
                 Peak Amplitude
               </span>
-              <span className="font-semibold text-industrial-800 font-mono mt-0.5 block">
-                {uploadedSignal.statistics?.peak?.toFixed(4) ?? 'N/A'}
+              <span className="font-semibold text-[#1D1D1F] font-mono tabular-nums text-[13px] mt-1 block">
+                {uploadedSignal.statistics?.peak !== undefined
+                  ? uploadedSignal.statistics.peak.toFixed(4)
+                  : 'N/A'}
               </span>
             </div>
           </div>
+        </div>
+      ) : (
+        /* View 3: Clean Drag & Drop Surface */
+        <div
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          onClick={() => fileInputRef.current?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+          className={`border border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 ${
+            isDragging
+              ? 'border-[#0071E3] bg-[#F0F6FF]'
+              : 'border-[#D1D1D6] hover:border-[#0071E3] bg-[#FBFBFD] hover:bg-[#FFFFFF]'
+          }`}
+        >
+          <div className="flex flex-col items-center max-w-sm mx-auto">
+            <div className="w-10 h-10 rounded-full bg-[#FFFFFF] border border-[#E5E5EA] text-[#6E6E73] flex items-center justify-center mb-3 shadow-subtle">
+              <UploadCloud className="w-5 h-5 text-[#0071E3]" />
+            </div>
+            <p className="text-[13px] font-medium text-[#1D1D1F]">
+              Drop your signal here{' '}
+              <span className="text-[#0071E3] font-medium underline underline-offset-2">
+                or choose a file
+              </span>
+            </p>
+            <p className="text-[11px] text-[#86868B] mt-1">
+              WAV audio or CSV time-series data &bull; Up to 50 MB
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message Feedback */}
+      {errorMessage && (
+        <div className="mt-4 p-3 bg-[#FF3B30]/10 border border-[#FF3B30]/20 rounded-xl flex items-start gap-2.5 text-[12px] text-[#D70015]">
+          <AlertCircle className="w-4 h-4 text-[#FF3B30] shrink-0 mt-0.5" />
+          <div className="flex-1 font-sans">{errorMessage}</div>
         </div>
       )}
     </div>
   );
 };
+
+export default SignalUploader;

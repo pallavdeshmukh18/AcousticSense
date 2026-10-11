@@ -36,56 +36,61 @@ export const EnvelopeChart: React.FC<EnvelopeChartProps> = ({
       arrowhead: 2,
       arrowsize: 1,
       arrowwidth: 1.5,
-      arrowcolor: fi.indicator_rf >= 3.0 ? '#d97706' : '#2563eb',
-      font: { size: 10, color: '#1e293b', family: 'JetBrains Mono, monospace' },
-      bgcolor: '#ffffff',
-      bordercolor: '#cbd5e1',
+      arrowcolor: fi.indicator_rf >= 3.0 ? '#FF9500' : '#0071E3',
+      font: { size: 10, color: '#1D1D1F', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+      bgcolor: '#FFFFFF',
+      bordercolor: '#E5E5EA',
       borderwidth: 1,
       borderpad: 2,
       yshift: 12,
     }));
 
   return (
-    <div className="bg-white border border-industrial-200 rounded-xl p-5 shadow-xs">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+    <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-6 shadow-subtle space-y-4">
+      {/* Header & Segmented Control Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h4 className="text-xs font-semibold text-industrial-800 uppercase tracking-wider font-mono">
-            Hilbert Demodulation & Envelope Analysis
+          <span className="text-[11px] font-mono text-[#0071E3] uppercase tracking-wider font-semibold">
+            Stages 06 & 07 &bull; Hilbert Demodulation
+          </span>
+          <h4 className="text-[15px] font-semibold text-[#1D1D1F] tracking-tight mt-0.5">
+            Analytic Envelope & Demodulated Harmonics
           </h4>
-          <p className="text-xs text-industrial-500 mt-0.5">
-            Analytic signal envelope A[n] = √(y² + H(y)²) and AC-coupled demodulated envelope spectrum.
+          <p className="text-[13px] text-[#6E6E73] mt-0.5">
+            Instantaneous envelope A[n] = √(y² + H(y)²) and modulation spectrum.
           </p>
         </div>
 
-        {/* View Switcher Tabs */}
-        <div className="flex items-center bg-industrial-100 p-0.5 rounded-lg border border-industrial-200 self-start sm:self-auto">
+        {/* macOS Style Segmented Control */}
+        <div className="flex items-center bg-[#F5F5F7] p-1 rounded-full border border-[#E5E5EA] self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setActiveTab('spectrum')}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium rounded-full transition-all ${
               activeTab === 'spectrum'
-                ? 'bg-white text-industrial-900 shadow-xs'
-                : 'text-industrial-500 hover:text-industrial-800'
+                ? 'bg-[#FFFFFF] text-[#1D1D1F] shadow-subtle'
+                : 'text-[#6E6E73] hover:text-[#1D1D1F]'
             }`}
           >
-            <Activity className="w-3.5 h-3.5 text-primary-600" />
+            <Activity className="w-3.5 h-3.5" />
             <span>Envelope Spectrum</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('waveform')}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium rounded-full transition-all ${
               activeTab === 'waveform'
-                ? 'bg-white text-industrial-900 shadow-xs'
-                : 'text-industrial-500 hover:text-industrial-800'
+                ? 'bg-[#FFFFFF] text-[#1D1D1F] shadow-subtle'
+                : 'text-[#6E6E73] hover:text-[#1D1D1F]'
             }`}
           >
-            <Waves className="w-3.5 h-3.5 text-primary-600" />
+            <Waves className="w-3.5 h-3.5" />
             <span>Envelope Waveform</span>
           </button>
         </div>
       </div>
 
+      {/* Chart View */}
       {activeTab === 'spectrum' ? (
         <div className="w-full h-80">
           <Plot
@@ -95,7 +100,7 @@ export const EnvelopeChart: React.FC<EnvelopeChartProps> = ({
                 y: envelope_spectrum.magnitudes,
                 type: 'scatter',
                 mode: 'lines',
-                line: { color: '#0284c7', width: 1.5 },
+                line: { color: '#0071E3', width: 1.5 },
                 name: 'Envelope Spectrum',
                 hoverinfo: 'x+y',
                 hovertemplate: '%{x:.2f} Hz: %{y:.5f}<extra></extra>',
@@ -107,7 +112,7 @@ export const EnvelopeChart: React.FC<EnvelopeChartProps> = ({
                       y: dominant_peaks.map((p) => p.magnitude),
                       type: 'scatter' as const,
                       mode: 'markers' as const,
-                      marker: { color: '#0369a1', size: 6, symbol: 'circle' as const },
+                      marker: { color: '#0071E3', size: 5, symbol: 'circle' as const },
                       name: 'Envelope Peaks',
                       hoverinfo: 'x+y' as const,
                       hovertemplate: 'Peak: %{x:.2f} Hz<br>Mag: %{y:.5f}<extra></extra>',
@@ -119,11 +124,10 @@ export const EnvelopeChart: React.FC<EnvelopeChartProps> = ({
               autosize: true,
               margin: { l: 55, r: 25, t: 20, b: 45 },
               xaxis: {
-                title: { text: 'Modulation Frequency (Hz)', font: { size: 11, color: '#64748b' } },
-                tickfont: { size: 10, color: '#64748b', family: 'JetBrains Mono, monospace' },
-                gridcolor: '#f1f5f9',
-                linecolor: '#cbd5e1',
-                // Zoom in on low frequency modulation region (up to 500 Hz or Nyquist if smaller)
+                title: { text: 'Modulation Frequency (Hz)', font: { size: 11, color: '#6E6E73' } },
+                tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+                gridcolor: '#F2F2F7',
+                linecolor: '#E5E5EA',
                 range: [
                   0,
                   Math.min(
@@ -133,16 +137,16 @@ export const EnvelopeChart: React.FC<EnvelopeChartProps> = ({
                 ],
               },
               yaxis: {
-                title: { text: 'Magnitude', font: { size: 11, color: '#64748b' } },
-                tickfont: { size: 10, color: '#64748b', family: 'JetBrains Mono, monospace' },
-                gridcolor: '#f1f5f9',
-                linecolor: '#cbd5e1',
+                title: { text: 'Magnitude', font: { size: 11, color: '#6E6E73' } },
+                tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+                gridcolor: '#F2F2F7',
+                linecolor: '#E5E5EA',
                 zeroline: false,
               },
               annotations,
               showlegend: false,
-              plot_bgcolor: '#ffffff',
-              paper_bgcolor: '#ffffff',
+              plot_bgcolor: '#FFFFFF',
+              paper_bgcolor: '#FFFFFF',
             }}
             useResizeHandler={true}
             style={{ width: '100%', height: '100%' }}
@@ -158,7 +162,7 @@ export const EnvelopeChart: React.FC<EnvelopeChartProps> = ({
                 y: envelope_samples,
                 type: 'scatter',
                 mode: 'lines',
-                line: { color: '#475569', width: 1.2 },
+                line: { color: '#0071E3', width: 1.25 },
                 name: 'Envelope A[n]',
                 hoverinfo: 'x+y',
                 hovertemplate: '%{x:.4f} s: %{y:.4f}<extra></extra>',
@@ -168,21 +172,21 @@ export const EnvelopeChart: React.FC<EnvelopeChartProps> = ({
               autosize: true,
               margin: { l: 55, r: 25, t: 20, b: 45 },
               xaxis: {
-                title: { text: 'Time (seconds)', font: { size: 11, color: '#64748b' } },
-                tickfont: { size: 10, color: '#64748b', family: 'JetBrains Mono, monospace' },
-                gridcolor: '#f1f5f9',
-                linecolor: '#cbd5e1',
+                title: { text: 'Time (seconds)', font: { size: 11, color: '#6E6E73' } },
+                tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+                gridcolor: '#F2F2F7',
+                linecolor: '#E5E5EA',
               },
               yaxis: {
-                title: { text: 'Envelope Amplitude', font: { size: 11, color: '#64748b' } },
-                tickfont: { size: 10, color: '#64748b', family: 'JetBrains Mono, monospace' },
-                gridcolor: '#f1f5f9',
-                linecolor: '#cbd5e1',
+                title: { text: 'Envelope Amplitude', font: { size: 11, color: '#6E6E73' } },
+                tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+                gridcolor: '#F2F2F7',
+                linecolor: '#E5E5EA',
                 zeroline: false,
               },
               showlegend: false,
-              plot_bgcolor: '#ffffff',
-              paper_bgcolor: '#ffffff',
+              plot_bgcolor: '#FFFFFF',
+              paper_bgcolor: '#FFFFFF',
             }}
             useResizeHandler={true}
             style={{ width: '100%', height: '100%' }}
@@ -191,16 +195,18 @@ export const EnvelopeChart: React.FC<EnvelopeChartProps> = ({
         </div>
       )}
 
-      {/* Characteristic Frequency Badges */}
+      {/* Target Defect Harmonics Reference Bar */}
       {Object.keys(fault_frequencies).length > 0 && (
-        <div className="mt-3 pt-3 border-t border-industrial-100 flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-industrial-400 font-mono text-[11px]">Kinematic Frequencies:</span>
+        <div className="pt-2 border-t border-[#F2F2F7] flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-[#86868B] font-mono text-[10px] uppercase tracking-wider">
+            Kinematic Target Harmonics:
+          </span>
           {Object.entries(fault_frequencies).map(([key, val]) => (
             <span
               key={key}
-              className="px-2 py-0.5 bg-industrial-100 text-industrial-700 rounded font-mono text-[11px] border border-industrial-200"
+              className="px-2.5 py-1 bg-[#FBFBFD] text-[#1D1D1F] rounded-lg font-mono text-[11px] border border-[#E5E5EA] font-medium tabular-nums"
             >
-              {key}: {val.toFixed(2)} Hz
+              <strong>{key}</strong>: {val.toFixed(2)} Hz
             </span>
           ))}
         </div>
@@ -208,3 +214,5 @@ export const EnvelopeChart: React.FC<EnvelopeChartProps> = ({
     </div>
   );
 };
+
+export default EnvelopeChart;

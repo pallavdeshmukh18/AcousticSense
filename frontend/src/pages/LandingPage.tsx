@@ -8,9 +8,7 @@ import {
   MoreHorizontal,
   ChevronDown,
 } from 'lucide-react';
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { apiService } from '../services/api';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,8 +23,8 @@ export const LandingPage: React.FC = () => {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/health`, { timeout: 2000 });
-        setBackendOnline(res.data?.status === 'ok');
+        const res = await apiService.checkHealth();
+        setBackendOnline(res?.status === 'ok');
       } catch {
         setBackendOnline(false);
       }

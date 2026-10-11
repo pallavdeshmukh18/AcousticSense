@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSignal } from '../../context/SignalContext';
 import { BearingParameters } from '../../types/api';
-import { Play, Settings2, HelpCircle, AlertCircle, RotateCcw } from 'lucide-react';
+import { Play, AlertCircle, RotateCcw, Activity } from 'lucide-react';
 
 export const AnalysisForm: React.FC = () => {
   const { uploadedSignal, runAnalysis, isAnalyzing, analysisError } = useSignal();
@@ -48,7 +48,7 @@ export const AnalysisForm: React.FC = () => {
       const theta = parseFloat(contactAngleDeg);
 
       if (!n || n <= 0) {
-        setValidationError('Rolling elements count must be an integer >= 1.');
+        setValidationError('Rolling elements count must be an integer ≥ 1.');
         return;
       }
       if (!d || d <= 0) {
@@ -112,154 +112,198 @@ export const AnalysisForm: React.FC = () => {
   const hasSignal = Boolean(uploadedSignal);
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-industrial-200 rounded-xl p-6 shadow-xs">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-industrial-100 flex items-center justify-center text-industrial-700">
-            <Settings2 className="w-4 h-4" />
-          </div>
-          <div>
-            <h2 className="text-base font-semibold text-industrial-800">Analysis Configuration</h2>
-            <p className="text-xs text-industrial-500">
-              Configure DSP filter bounds, theoretical kinematics, and detection thresholds.
-            </p>
-          </div>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-6 shadow-subtle space-y-6"
+    >
+      {/* Section Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-[15px] font-semibold text-[#1D1D1F] tracking-tight">
+            Analysis settings
+          </h2>
+          <p className="text-[13px] text-[#6E6E73] mt-0.5">
+            Adjust signal parameters and detection settings.
+          </p>
         </div>
 
         <button
           type="button"
           onClick={handleResetDefaults}
-          className="flex items-center gap-1 text-xs text-industrial-500 hover:text-industrial-700 font-medium px-2 py-1 rounded transition-colors"
-          title="Reset form to default parameters"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium text-[#6E6E73] hover:text-[#1D1D1F] bg-[#F5F5F7] hover:bg-[#E5E5EA] transition-colors"
+          title="Reset form fields to defaults"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
+          <RotateCcw className="w-3 h-3" />
           <span>Reset Defaults</span>
         </button>
       </div>
 
-      {/* Main Parameters Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
-        <div>
-          <label className="block text-xs font-medium text-industrial-700 mb-1 flex items-center justify-between">
-            <span>Sampling Frequency (Fs) *</span>
-            <span className="text-[10px] text-industrial-400 font-mono">Hz</span>
-          </label>
-          <input
-            type="number"
-            value={samplingFrequency}
-            onChange={(e) => setSamplingFrequency(e.target.value)}
-            placeholder="e.g. 48000"
-            required
-            min="1"
-            step="any"
-            className="w-full text-xs px-3 py-2 border border-industrial-300 rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary-500 font-mono"
-          />
-          <span className="text-[10px] text-industrial-400 mt-1 block">
-            Overrides or supplies signal sample rate.
-          </span>
+      {/* ========================================================= */}
+      {/* GROUP 1 — SIGNAL PARAMETERS */}
+      {/* ========================================================= */}
+      <div className="space-y-3">
+        <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider font-mono">
+          Signal Parameters
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
+              Sampling Frequency (Fs) <span className="text-[#FF3B30]">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={samplingFrequency}
+                onChange={(e) => setSamplingFrequency(e.target.value)}
+                placeholder="e.g. 48000"
+                required
+                min="1"
+                step="any"
+                className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono tabular-nums text-[#1D1D1F] transition-colors"
+              />
+              <span className="absolute right-3 top-2.5 text-[11px] text-[#86868B] font-mono pointer-events-none">
+                Hz
+              </span>
+            </div>
+            <span className="text-[11px] text-[#86868B] mt-1 block">
+              Required for Nyquist frequency limits and spectrum binning.
+            </span>
+          </div>
 
-        <div>
-          <label className="block text-xs font-medium text-industrial-700 mb-1 flex items-center justify-between">
-            <span>Shaft Speed (RPM)</span>
-            <span className="text-[10px] text-industrial-400 font-mono">RPM</span>
-          </label>
-          <input
-            type="number"
-            value={shaftSpeedRpm}
-            onChange={(e) => setShaftSpeedRpm(e.target.value)}
-            placeholder="e.g. 1800"
-            min="1"
-            step="any"
-            className="w-full text-xs px-3 py-2 border border-industrial-300 rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary-500 font-mono"
-          />
-          <span className="text-[10px] text-industrial-400 mt-1 block">
-            Used to compute rotational frequency fr = RPM / 60.
-          </span>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-industrial-700 mb-1 flex items-center justify-between">
-            <span>Detection Threshold (Rf)</span>
-            <span className="text-[10px] text-industrial-400 font-mono">ratio</span>
-          </label>
-          <input
-            type="number"
-            value={detectionThreshold}
-            onChange={(e) => setDetectionThreshold(e.target.value)}
-            placeholder="3.0"
-            min="0.1"
-            step="any"
-            className="w-full text-xs px-3 py-2 border border-industrial-300 rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary-500 font-mono"
-          />
-          <span className="text-[10px] text-industrial-400 mt-1 block">
-            Peak-to-noise ratio cutoff (default: 3.0).
-          </span>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-industrial-700 mb-1 flex items-center justify-between">
-            <span>Processing Block Length</span>
-            <span className="text-[10px] text-industrial-400 font-mono">samples</span>
-          </label>
-          <input
-            type="number"
-            value={blockLength}
-            onChange={(e) => setBlockLength(e.target.value)}
-            placeholder="1024"
-            min="16"
-            step="16"
-            className="w-full text-xs px-3 py-2 border border-industrial-300 rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary-500 font-mono"
-          />
-          <span className="text-[10px] text-industrial-400 mt-1 block">
-            Default block size for segmenting (min: 16).
-          </span>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-industrial-700 mb-1 flex items-center justify-between">
-            <span>Candidate Filter Bands</span>
-            <span className="text-[10px] text-industrial-400 font-mono">bands</span>
-          </label>
-          <input
-            type="number"
-            value={numCandidateBands}
-            onChange={(e) => setNumCandidateBands(e.target.value)}
-            placeholder="4"
-            min="2"
-            max="16"
-            className="w-full text-xs px-3 py-2 border border-industrial-300 rounded-md focus:outline-hidden focus:ring-1 focus:ring-primary-500 font-mono"
-          />
-          <span className="text-[10px] text-industrial-400 mt-1 block">
-            Sub-band divisions for excess kurtosis screening.
-          </span>
+          <div>
+            <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
+              Shaft Speed
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={shaftSpeedRpm}
+                onChange={(e) => setShaftSpeedRpm(e.target.value)}
+                placeholder="1800"
+                min="1"
+                step="any"
+                className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono tabular-nums text-[#1D1D1F] transition-colors"
+              />
+              <span className="absolute right-3 top-2.5 text-[11px] text-[#86868B] font-mono pointer-events-none">
+                RPM
+              </span>
+            </div>
+            <span className="text-[11px] text-[#86868B] mt-1 block">
+              Fundamental rotational frequency: fr = RPM / 60.
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Bearing Geometry Section */}
-      <div className="border border-industrial-200 rounded-lg p-4 mb-5 bg-industrial-50/50">
-        <div className="flex items-center justify-between mb-3">
+      <div className="border-t border-[#F2F2F7]" />
+
+      {/* ========================================================= */}
+      {/* GROUP 2 — DETECTION PARAMETERS */}
+      {/* ========================================================= */}
+      <div className="space-y-3">
+        <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider font-mono">
+          Detection Parameters
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
+              Detection Threshold (Rf)
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={detectionThreshold}
+                onChange={(e) => setDetectionThreshold(e.target.value)}
+                placeholder="3.0"
+                min="0.1"
+                step="any"
+                className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono tabular-nums text-[#1D1D1F] transition-colors"
+              />
+              <span className="absolute right-3 top-2.5 text-[11px] text-[#86868B] font-mono pointer-events-none">
+                ratio
+              </span>
+            </div>
+            <span className="text-[11px] text-[#86868B] mt-1 block">
+              Peak-to-median noise ratio cutoff (nominal: 3.00).
+            </span>
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
+              Block Length
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={blockLength}
+                onChange={(e) => setBlockLength(e.target.value)}
+                placeholder="1024"
+                min="16"
+                step="16"
+                className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono tabular-nums text-[#1D1D1F] transition-colors"
+              />
+              <span className="absolute right-3 top-2.5 text-[11px] text-[#86868B] font-mono pointer-events-none">
+                pts
+              </span>
+            </div>
+            <span className="text-[11px] text-[#86868B] mt-1 block">
+              Window segment size for moment calculations.
+            </span>
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
+              Candidate Filter Bands
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={numCandidateBands}
+                onChange={(e) => setNumCandidateBands(e.target.value)}
+                placeholder="4"
+                min="2"
+                max="16"
+                className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono tabular-nums text-[#1D1D1F] transition-colors"
+              />
+              <span className="absolute right-3 top-2.5 text-[11px] text-[#86868B] font-mono pointer-events-none">
+                bands
+              </span>
+            </div>
+            <span className="text-[11px] text-[#86868B] mt-1 block">
+              Discrete sub-bands screened for peak kurtosis.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-[#F2F2F7]" />
+
+      {/* ========================================================= */}
+      {/* GROUP 3 — BEARING GEOMETRY & KINEMATICS */}
+      {/* ========================================================= */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={enableBearing}
               onChange={(e) => setEnableBearing(e.target.checked)}
-              className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4 border-industrial-300"
+              className="rounded text-[#0071E3] focus:ring-[#0071E3] h-4 w-4 border-[#E5E5EA]"
             />
-            <span className="text-xs font-semibold text-industrial-800">
-              Evaluate Theoretical Bearing Kinematics
+            <span className="text-[13px] font-medium text-[#1D1D1F]">
+              Evaluate bearing kinematics
             </span>
           </label>
-          <span className="text-[11px] text-industrial-400 flex items-center gap-1">
-            <HelpCircle className="w-3.5 h-3.5" />
-            BPFO, BPFI, BSF, FTF
+
+          <span className="text-[11px] font-mono text-[#86868B]">
+            BPFO &bull; BPFI &bull; BSF &bull; FTF
           </span>
         </div>
 
-        {enableBearing && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 pt-3 border-t border-industrial-200/60">
+        {enableBearing ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
             <div>
-              <label className="block text-[11px] font-medium text-industrial-600 mb-1">
+              <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
                 Rolling Elements (n)
               </label>
               <input
@@ -268,82 +312,112 @@ export const AnalysisForm: React.FC = () => {
                 onChange={(e) => setRollingElements(e.target.value)}
                 placeholder="8"
                 min="1"
-                className="w-full text-xs px-2.5 py-1.5 border border-industrial-300 rounded bg-white font-mono"
+                className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono tabular-nums text-[#1D1D1F] transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-industrial-600 mb-1">
-                Ball Diameter (d) [mm]
+              <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
+                Ball Diameter (d)
               </label>
-              <input
-                type="number"
-                value={ballDiameter}
-                onChange={(e) => setBallDiameter(e.target.value)}
-                placeholder="7.5"
-                min="0.001"
-                step="any"
-                className="w-full text-xs px-2.5 py-1.5 border border-industrial-300 rounded bg-white font-mono"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  value={ballDiameter}
+                  onChange={(e) => setBallDiameter(e.target.value)}
+                  placeholder="7.5"
+                  min="0.001"
+                  step="any"
+                  className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono tabular-nums text-[#1D1D1F] transition-colors"
+                />
+                <span className="absolute right-3 top-2.5 text-[11px] text-[#86868B] font-mono pointer-events-none">
+                  mm
+                </span>
+              </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-industrial-600 mb-1">
-                Pitch Diameter (D) [mm]
+              <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
+                Pitch Diameter (D)
               </label>
-              <input
-                type="number"
-                value={pitchDiameter}
-                onChange={(e) => setPitchDiameter(e.target.value)}
-                placeholder="34.5"
-                min="0.001"
-                step="any"
-                className="w-full text-xs px-2.5 py-1.5 border border-industrial-300 rounded bg-white font-mono"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  value={pitchDiameter}
+                  onChange={(e) => setPitchDiameter(e.target.value)}
+                  placeholder="34.5"
+                  min="0.001"
+                  step="any"
+                  className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono tabular-nums text-[#1D1D1F] transition-colors"
+                />
+                <span className="absolute right-3 top-2.5 text-[11px] text-[#86868B] font-mono pointer-events-none">
+                  mm
+                </span>
+              </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-industrial-600 mb-1">
-                Contact Angle (θ) [deg]
+              <label className="block text-[12px] font-medium text-[#1D1D1F] mb-1">
+                Contact Angle (θ)
               </label>
-              <input
-                type="number"
-                value={contactAngleDeg}
-                onChange={(e) => setContactAngleDeg(e.target.value)}
-                placeholder="0"
-                min="-90"
-                max="90"
-                step="any"
-                className="w-full text-xs px-2.5 py-1.5 border border-industrial-300 rounded bg-white font-mono"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  value={contactAngleDeg}
+                  onChange={(e) => setContactAngleDeg(e.target.value)}
+                  placeholder="0"
+                  min="-90"
+                  max="90"
+                  step="any"
+                  className="w-full text-[13px] px-3 py-2 bg-[#FFFFFF] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/15 font-mono tabular-nums text-[#1D1D1F] transition-colors"
+                />
+                <span className="absolute right-3 top-2.5 text-[11px] text-[#86868B] font-mono pointer-events-none">
+                  °
+                </span>
+              </div>
             </div>
+          </div>
+        ) : (
+          <div className="p-3 bg-[#FBFBFD] border border-[#E5E5EA] rounded-xl text-[12px] text-[#86868B]">
+            Bearing kinematics disabled. Analysis will evaluate statistical moments and envelope spectrum without harmonic frequency matching.
           </div>
         )}
       </div>
 
       {/* Validation or API Errors */}
       {(validationError || analysisError) && (
-        <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-2.5 text-xs text-rose-800">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-          <div>{validationError || analysisError}</div>
+        <div className="p-3 bg-[#FF3B30]/10 border border-[#FF3B30]/20 rounded-xl flex items-start gap-2.5 text-[12px] text-[#D70015]">
+          <AlertCircle className="w-4 h-4 text-[#FF3B30] shrink-0 mt-0.5" />
+          <div className="font-sans">{validationError || analysisError}</div>
         </div>
       )}
 
-      {/* Run Action */}
-      <div className="flex items-center justify-between pt-2">
-        <span className="text-xs text-industrial-400">
-          {!hasSignal ? 'Upload a signal file first to run analysis.' : 'Ready to execute 8-stage DSP.'}
+      {/* Primary Action Button Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+        <span className="text-[12px] text-[#86868B]">
+          {!hasSignal ? 'Upload a signal to continue.' : 'Ready to analyze.'}
         </span>
 
         <button
           type="submit"
           disabled={!hasSignal || isAnalyzing}
-          className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-[13px] font-medium rounded-full text-white bg-[#0071E3] hover:bg-[#0077ED] disabled:opacity-40 disabled:cursor-not-allowed shadow-subtle transition-colors"
         >
-          <Play className={`w-4 h-4 fill-white ${isAnalyzing ? 'animate-spin' : ''}`} />
-          <span>{isAnalyzing ? 'Processing DSP Pipeline...' : 'Run DSP Analysis'}</span>
+          {isAnalyzing ? (
+            <>
+              <Activity className="w-4 h-4 animate-spin" />
+              <span>Analysing signal…</span>
+            </>
+          ) : (
+            <>
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Run DSP Analysis</span>
+            </>
+          )}
         </button>
       </div>
     </form>
   );
 };
+
+export default AnalysisForm;

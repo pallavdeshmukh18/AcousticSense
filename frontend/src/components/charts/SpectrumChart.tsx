@@ -19,7 +19,7 @@ export const SpectrumChart: React.FC<SpectrumChartProps> = ({
 }) => {
   if (!frequencies || frequencies.length === 0) {
     return (
-      <div className="bg-white border border-industrial-200 rounded-xl p-8 text-center text-xs text-industrial-400">
+      <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-8 text-center text-[13px] text-[#86868B]">
         Spectrum data unavailable.
       </div>
     );
@@ -33,27 +33,34 @@ export const SpectrumChart: React.FC<SpectrumChartProps> = ({
     showarrow: true,
     arrowhead: 2,
     arrowsize: 1,
-    arrowwidth: 1,
-    arrowcolor: '#2563eb',
-    font: { size: 10, color: '#1e293b', family: 'JetBrains Mono, monospace' },
-    bgcolor: '#ffffff',
-    bordercolor: '#cbd5e1',
+    arrowwidth: 1.5,
+    arrowcolor: '#0071E3',
+    font: { size: 10, color: '#1D1D1F', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+    bgcolor: '#FFFFFF',
+    bordercolor: '#E5E5EA',
     borderwidth: 1,
     borderpad: 3,
     yshift: 10,
   }));
 
   return (
-    <div className="bg-white border border-industrial-200 rounded-xl p-5 shadow-xs">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-3">
-        <h4 className="text-xs font-semibold text-industrial-800 uppercase tracking-wider font-mono">
-          {title}
-        </h4>
-        <span className="text-[11px] font-mono text-industrial-500">
+    <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E5EA] p-6 shadow-subtle space-y-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+        <div>
+          <span className="text-[11px] font-mono text-[#0071E3] uppercase tracking-wider font-semibold">
+            Stage 03 &bull; Fourier Domain
+          </span>
+          <h4 className="text-[15px] font-semibold text-[#1D1D1F] tracking-tight mt-0.5">
+            {title}
+          </h4>
+        </div>
+        <span className="text-[11px] font-mono text-[#6E6E73] bg-[#F5F5F7] px-2.5 py-1 rounded-md self-start sm:self-auto tabular-nums">
           Δf: {frequencyResolution.toFixed(3)} Hz
         </span>
       </div>
 
+      {/* Chart */}
       <div className="w-full h-80">
         <Plot
           data={[
@@ -62,7 +69,7 @@ export const SpectrumChart: React.FC<SpectrumChartProps> = ({
               y: magnitudes,
               type: 'scatter',
               mode: 'lines',
-              line: { color: '#2563eb', width: 1.5 },
+              line: { color: '#0071E3', width: 1.5 },
               name: 'FFT Magnitude',
               hoverinfo: 'x+y',
               hovertemplate: '%{x:.2f} Hz: %{y:.5f}<extra></extra>',
@@ -74,7 +81,7 @@ export const SpectrumChart: React.FC<SpectrumChartProps> = ({
                     y: dominantPeaks.map((p) => p.magnitude),
                     type: 'scatter' as const,
                     mode: 'markers' as const,
-                    marker: { color: '#1d4ed8', size: 6, symbol: 'diamond' as const },
+                    marker: { color: '#0071E3', size: 6, symbol: 'diamond' as const },
                     name: 'Dominant Peaks',
                     hoverinfo: 'x+y' as const,
                     hovertemplate: 'Peak: %{x:.2f} Hz<br>Mag: %{y:.5f}<extra></extra>',
@@ -86,23 +93,23 @@ export const SpectrumChart: React.FC<SpectrumChartProps> = ({
             autosize: true,
             margin: { l: 55, r: 25, t: 20, b: 45 },
             xaxis: {
-              title: { text: 'Frequency (Hz)', font: { size: 11, color: '#64748b' } },
-              tickfont: { size: 10, color: '#64748b', family: 'JetBrains Mono, monospace' },
-              gridcolor: '#f1f5f9',
-              linecolor: '#cbd5e1',
+              title: { text: 'Frequency (Hz)', font: { size: 11, color: '#6E6E73' } },
+              tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+              gridcolor: '#F2F2F7',
+              linecolor: '#E5E5EA',
               zeroline: false,
             },
             yaxis: {
-              title: { text: 'Magnitude', font: { size: 11, color: '#64748b' } },
-              tickfont: { size: 10, color: '#64748b', family: 'JetBrains Mono, monospace' },
-              gridcolor: '#f1f5f9',
-              linecolor: '#cbd5e1',
+              title: { text: 'Magnitude', font: { size: 11, color: '#6E6E73' } },
+              tickfont: { size: 10, color: '#6E6E73', family: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' },
+              gridcolor: '#F2F2F7',
+              linecolor: '#E5E5EA',
               zeroline: false,
             },
             annotations,
             showlegend: false,
-            plot_bgcolor: '#ffffff',
-            paper_bgcolor: '#ffffff',
+            plot_bgcolor: '#FFFFFF',
+            paper_bgcolor: '#FFFFFF',
           }}
           useResizeHandler={true}
           style={{ width: '100%', height: '100%' }}
@@ -112,3 +119,5 @@ export const SpectrumChart: React.FC<SpectrumChartProps> = ({
     </div>
   );
 };
+
+export default SpectrumChart;
