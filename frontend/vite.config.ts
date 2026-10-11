@@ -8,4 +8,15 @@ export default defineConfig({
     port: 5173,
     host: '0.0.0.0',
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          plotly: ['plotly.js-dist-min'],
+          vendor: ['react', 'react-dom', 'react-router-dom', 'axios', 'lucide-react'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 3500,
+  },
 });

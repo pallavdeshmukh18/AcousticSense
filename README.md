@@ -11,10 +11,13 @@ This repository contains the software implementation for our research project on
   - [`tests/test_api.py`](backend/tests/test_api.py): Comprehensive Pytest test suite with synthetic and kinematic validation signals.
   - [`requirements.txt`](backend/requirements.txt): Python dependency definitions.
   - [`README.md`](backend/README.md): Detailed backend documentation, API specifications, and DSP methodology.
+- [`frontend/`](frontend/): React + Vite TypeScript web dashboard with Plotly.js visualizations.
+  - [`src/`](frontend/src/): Components, layouts, charts, and API integration.
+  - [`README.md`](frontend/README.md): Frontend documentation and setup instructions.
 
 ## Getting Started
 
-### Backend Setup & Startup
+### 1. Backend Setup & Startup
 
 ```bash
 cd backend
@@ -26,7 +29,17 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - Interactive Swagger Docs: `http://localhost:8000/docs`
 - Health Check: `http://localhost:8000/api/health`
 
-### Running Backend Tests
+### 2. Frontend Setup & Startup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+- Frontend Dashboard: `http://localhost:5173`
+
+### 3. Running Backend Tests
 
 ```bash
 cd backend
