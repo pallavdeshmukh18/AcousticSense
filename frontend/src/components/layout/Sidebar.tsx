@@ -11,6 +11,7 @@ import {
   X,
   Server,
   Trash2,
+  Home,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -19,7 +20,7 @@ export const Sidebar: React.FC = () => {
 
   const navItems = [
     {
-      to: '/',
+      to: '/dashboard',
       label: 'Dashboard',
       icon: Activity,
       description: 'System overview & DSP pipeline',
@@ -36,25 +37,31 @@ export const Sidebar: React.FC = () => {
       icon: FlaskConical,
       description: 'Block-length evaluations',
     },
+    {
+      to: '/',
+      label: 'Landing Page',
+      icon: Home,
+      description: 'Presentation & architecture',
+    },
   ];
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white border-r border-industrial-200 w-64 select-none">
       {/* Brand Header */}
       <div className="p-5 border-b border-industrial-100 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center text-white shadow-sm">
+        <NavLink to="/" className="flex items-center gap-3 group">
+          <div className="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform">
             <Radio className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-semibold text-industrial-900 tracking-tight leading-none text-base">
+            <div className="font-semibold text-industrial-900 tracking-tight leading-none text-base group-hover:text-primary-600 transition-colors">
               AcousticSense
             </div>
             <div className="text-[11px] text-industrial-500 font-medium mt-1 leading-tight">
               Acoustic Emission Fault Detection
             </div>
           </div>
-        </div>
+        </NavLink>
         {mobileOpen && (
           <button
             onClick={() => setMobileOpen(false)}

@@ -6,8 +6,9 @@ import { Header } from './components/layout/Header';
 import { Dashboard } from './pages/Dashboard';
 import { SignalAnalysis } from './pages/SignalAnalysis';
 import { ExperimentLab } from './pages/ExperimentLab';
+import { LandingPage } from './pages/LandingPage';
 
-const RouteLayout: React.FC = () => {
+const AppLayout: React.FC = () => {
   const location = useLocation();
 
   const getPageMeta = () => {
@@ -22,7 +23,7 @@ const RouteLayout: React.FC = () => {
           title: 'Experiment Lab',
           description: 'Evaluate block segmentation effects on kurtosis and execution time.',
         };
-      case '/':
+      case '/dashboard':
       default:
         return {
           title: 'AcousticSense Dashboard',
@@ -40,7 +41,7 @@ const RouteLayout: React.FC = () => {
         <Header title={meta.title} description={meta.description} />
         <main className="flex-1 overflow-y-auto">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/analysis" element={<SignalAnalysis />} />
             <Route path="/experiments" element={<ExperimentLab />} />
             <Route path="*" element={<Dashboard />} />
@@ -55,7 +56,10 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <SignalProvider>
-        <RouteLayout />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/*" element={<AppLayout />} />
+        </Routes>
       </SignalProvider>
     </BrowserRouter>
   );
