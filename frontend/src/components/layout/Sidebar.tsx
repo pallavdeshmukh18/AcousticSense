@@ -11,6 +11,7 @@ import {
   X,
   Server,
   Trash2,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -35,6 +36,12 @@ export const Sidebar: React.FC = () => {
       label: 'Experiment Lab',
       icon: FlaskConical,
       description: 'Block-length evaluations',
+    },
+    {
+      to: '/benchmark',
+      label: 'Benchmark Suite',
+      icon: ShieldCheck,
+      description: 'CWRU dataset validation & ROC',
     },
   ];
 

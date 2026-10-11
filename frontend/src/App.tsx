@@ -6,6 +6,7 @@ import { Header } from './components/layout/Header';
 import { Dashboard } from './pages/Dashboard';
 import { SignalAnalysis } from './pages/SignalAnalysis';
 import { ExperimentLab } from './pages/ExperimentLab';
+import { BenchmarkEvaluation } from './pages/BenchmarkEvaluation';
 
 const RouteLayout: React.FC = () => {
   const location = useLocation();
@@ -21,6 +22,11 @@ const RouteLayout: React.FC = () => {
         return {
           title: 'Experiment Lab',
           description: 'Evaluate block segmentation effects on kurtosis and execution time.',
+        };
+      case '/benchmark':
+        return {
+          title: 'Benchmark Evaluation',
+          description: 'CWRU dataset test suite, interactive confusion matrix, and ROC curves.',
         };
       case '/':
       default:
@@ -43,6 +49,7 @@ const RouteLayout: React.FC = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/analysis" element={<SignalAnalysis />} />
             <Route path="/experiments" element={<ExperimentLab />} />
+            <Route path="/benchmark" element={<BenchmarkEvaluation />} />
             <Route path="*" element={<Dashboard />} />
           </Routes>
         </main>
