@@ -249,7 +249,7 @@ export const Dashboard: React.FC = () => {
                   onClick={() => navigate('/analysis')}
                   className="flex items-center gap-1.5 px-3.5 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded text-xs font-medium transition-colors"
                 >
-                  <Waveform className="w-3.5 h-3.5" />
+                  <Waves className="w-3.5 h-3.5" />
                   <span>Configure Analysis</span>
                 </button>
               )}
